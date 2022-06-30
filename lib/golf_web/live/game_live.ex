@@ -9,14 +9,24 @@ defmodule GolfWeb.Live.GameLive do
   end
 
   @impl true
+  def handle_params(_params, _uri, socket) do
+    {:noreply, socket}
+  end
+
+  @impl true
   def render(assigns) do
     ~H"""
     <.header socket={@socket} />
     <h2>Hello Game</h2>
 
-    <%= if @username do %>
-      <.footer username={@username} />
-    <% end %>
+    <svg class="game-svg"
+         width="500"
+         height="600"
+         viewbox="-250, -300, 500, 600"
+    >
+    </svg>
+
+    <.footer username={@username} />
     """
   end
 end

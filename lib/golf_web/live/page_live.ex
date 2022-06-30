@@ -26,10 +26,9 @@ defmodule GolfWeb.Live.PageLive do
 
     <h2>Hello Home</h2>
 
-    <.form
-      let={f}
-      for={@name_changeset}
-      action={Routes.user_path(@socket, :update_name)}
+    <.form let={f}
+           for={@name_changeset}
+           action={Routes.user_path(@socket, :update_name)}
     >
       <%= label f, :name %>
       <%= text_input f, :name, required: true %>
@@ -37,9 +36,8 @@ defmodule GolfWeb.Live.PageLive do
       <%= submit "Update name", class: "update-name-button" %>
     </.form>
 
-    <.form
-      for={:logout}
-      action={Routes.user_path(@socket, :logout)}
+    <.form for={:logout}
+           action={Routes.user_path(@socket, :logout)}
     >
       <%= submit "Forget me", class: "logout-button" %>
     </.form>
