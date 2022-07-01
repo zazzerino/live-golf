@@ -7,10 +7,6 @@ defmodule Golf.Game.Deck do
                  suit <- ~w(C D H S),
                  do: rank <> suit
 
-  def new() do
-    @card_list
-  end
-
   def new(1) do
     @card_list
   end
@@ -18,6 +14,8 @@ defmodule Golf.Game.Deck do
   def new(n) do
     @card_list ++ new(n - 1)
   end
+
+  def new(), do: new(1)
 
   def deal([], _n) do
     {:error, :empty_deck}

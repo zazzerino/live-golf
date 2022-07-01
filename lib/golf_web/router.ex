@@ -1,6 +1,14 @@
 defmodule GolfWeb.Router do
   use GolfWeb, :router
 
+  defp put_session_id(conn, _opts) do
+    if get_session(conn, :session_id) do
+      conn
+    else
+      put_session(conn, :session_id, Ecto.UUID.generate())
+    end
+  end
+
   pipeline :browser do
     plug :accepts, ["html"]
     plug :fetch_session
@@ -8,6 +16,7 @@ defmodule GolfWeb.Router do
     plug :put_root_layout, {GolfWeb.LayoutView, :root}
     plug :protect_from_forgery
     plug :put_secure_browser_headers
+    plug :put_session_id
   end
 
   pipeline :api do
@@ -21,6 +30,7 @@ defmodule GolfWeb.Router do
     live "/game", Live.GameLive
 
     post "/user/name", UserController, :update_name
+    post "/user/game_id", UserController, :update_game_id
     post "/user/logout", UserController, :logout
   end
 

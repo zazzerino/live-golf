@@ -20,6 +20,7 @@ defmodule Golf.Game.Player do
     %Player{id: id, name: name}
   end
 
+  @spec give_cards(t, [Card.t()]) :: t
   def give_cards(player, cards) do
     hand = Enum.map(cards, &HandCard.new/1)
     %Player{player | hand: hand}
@@ -46,7 +47,7 @@ defmodule Golf.Game.Player do
     {card, player}
   end
 
-  defp golf_vals_total(vals, total) do
+  defp total_vals(vals, total) do
     case vals do
       # all match
       [a, a, a,
@@ -56,42 +57,42 @@ defmodule Golf.Game.Player do
       # outer cols match
       [a, b, a,
        a, c, a] when is_integer(a) ->
-        golf_vals_total([b, c], total - 40)
+        total_vals([b, c], total - 40)
 
       # left 2 cols match
       [a, a, b,
        a, a, c] when is_integer(a) ->
-        golf_vals_total([b, c], total - 20)
+        total_vals([b, c], total - 20)
 
       # right 2 cols match
       [a, b, b,
        c, b, b] when is_integer(b) ->
-        golf_vals_total([a, c], total - 20)
+        total_vals([a, c], total - 20)
 
       # left col match
       [a, b, c,
        a, d, e] when is_integer(a) ->
-        golf_vals_total([b, c, d, e], total)
+        total_vals([b, c, d, e], total)
 
       # middle col match
       [a, b, c,
        d, b, e] when is_integer(b) ->
-        golf_vals_total([a, c, d, e], total)
+        total_vals([a, c, d, e], total)
 
       # right col match
       [a, b, c,
        d, e, c] when is_integer(c) ->
-        golf_vals_total([a, b, d, e], total)
+        total_vals([a, b, d, e], total)
 
       # left col match, 4 cards
       [a, b,
        a, c] when is_integer(a) ->
-        golf_vals_total([b, c], total)
+        total_vals([b, c], total)
 
       # right col match, 4 cards
       [a, b,
        c, b] when is_integer(b) ->
-        golf_vals_total([a, c], total)
+        total_vals([a, c], total)
 
       [a,
        a] when is_integer(a) ->
@@ -106,7 +107,7 @@ defmodule Golf.Game.Player do
 
   def score(player) do
     vals = Enum.map(player.hand, &HandCard.golf_value/1)
-    golf_vals_total(vals, 0)
+    total_vals(vals, 0)
   end
 
   def flipped_card_count(player) do
@@ -114,11 +115,11 @@ defmodule Golf.Game.Player do
   end
 
   def all_flipped?(player) do
-    flipped_card_count(player) === @hand_size
+    flipped_card_count(player) == @hand_size
   end
 
   def flipped_two?(player) do
-    flipped_card_count(player) === 2
+    flipped_card_count(player) == 2
   end
 
   defimpl Jason.Encoder, for: Player do

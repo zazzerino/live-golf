@@ -6,6 +6,11 @@ defmodule GolfWeb.UserController do
     redirect(conn, to: "/")
   end
 
+  def update_game_id(conn, %{"user" => %{"game_id" => game_id}}) do
+    conn = put_session(conn, :game_id, game_id)
+    redirect(conn, to: "/game")
+  end
+
   def logout(conn, _params) do
     conn
     |> configure_session(renew: true)

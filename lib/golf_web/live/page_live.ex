@@ -7,7 +7,7 @@ defmodule GolfWeb.Live.PageLive do
   def mount(_params, session, socket) do
     socket =
       assign(socket,
-        username: session["username"],
+        username: session["username"] || User.default_name(),
         name_changeset: User.name_changeset(%User{})
       )
 
@@ -20,18 +20,30 @@ defmodule GolfWeb.Live.PageLive do
   end
 
   @impl true
+  def handle_event("validate_name", %{"user" => params}, socket) do
+    name_changeset =
+      %User{}
+      |> User.name_changeset(params)
+      |> Map.put(:action, :validate)
+
+    socket = assign(socket, :name_changeset, name_changeset)
+    {:noreply, socket}
+  end
+
+  @impl true
   def render(assigns) do
     ~H"""
     <.header socket={@socket} />
 
     <h2>Hello Home</h2>
 
-    <.form let={f}
-           for={@name_changeset}
+    <.form for={@name_changeset}
            action={Routes.user_path(@socket, :update_name)}
+           phx_change="validate_name"
+           let={f}
     >
       <%= label f, :name %>
-      <%= text_input f, :name, required: true %>
+      <%= text_input f, :name, value: @username, required: true %>
       <%= error_tag f, :name %>
       <%= submit "Update name", class: "update-name-button" %>
     </.form>
