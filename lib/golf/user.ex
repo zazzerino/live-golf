@@ -16,7 +16,7 @@ defmodule Golf.User do
     user
     |> cast(params, [:name])
     |> validate_required([:name])
-    |> validate_length(:name, max: 12)
+    |> validate_length(:name, min: 3, max: 12)
   end
 
   # def game_id_changeset(user, params \\ %{}) do

@@ -9,9 +9,10 @@ defmodule GolfWeb.Live.PageLive do
   def mount(_params, session, socket) do
     socket =
       assign(socket,
-        username: session["username"] || User.default_name(),
+        username: session["username"],
         name_changeset: User.name_changeset(%User{}),
-        trigger_submit: false
+        trigger_submit_name: false,
+        trigger_submit_clear: false
       )
 
     {:ok, socket}
@@ -29,7 +30,7 @@ defmodule GolfWeb.Live.PageLive do
            action={Routes.user_path(@socket, :update_name)}
            phx-change="validate_name"
            phx-submit="save_name"
-           phx-trigger-action={@trigger_submit}
+           phx-trigger-action={@trigger_submit_name}
     >
       <%= label f, :name %>
       <%= text_input f, :name, required: true %>
@@ -37,8 +38,10 @@ defmodule GolfWeb.Live.PageLive do
       <%= submit "Update name" %>
     </.form>
 
-    <.form for={:logout}
-           action={Routes.user_path(@socket, :logout)}
+    <.form for={:clear_session}
+           action={Routes.user_path(@socket, :clear_session)}
+           phx-submit="clear_session"
+           phx-trigger-action={@trigger_submit_clear}
     >
       <%= submit "Forget me" %>
     </.form>
@@ -65,11 +68,16 @@ defmodule GolfWeb.Live.PageLive do
     changeset = User.name_changeset(%User{}, attrs)
 
     if changeset.valid? do
-      {:noreply, assign(socket, name_changeset: changeset, trigger_submit: true)}
+      {:noreply, assign(socket, name_changeset: changeset, trigger_submit_name: true)}
     else
       changeset = User.name_changeset(%User{})
       {:noreply, assign(socket, name_changeset: changeset)}
     end
+  end
+
+  @impl true
+  def handle_event("clear_session", _params, socket) do
+    {:noreply, assign(socket, trigger_submit_clear: true)}
   end
 
   @impl true

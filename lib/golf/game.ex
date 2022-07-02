@@ -56,6 +56,7 @@ defmodule Golf.Game do
     %Game{game | players: players, player_order: player_order}
   end
 
+  @spec remove_player(t, Player.id) :: t
   def remove_player(%{host_id: host_id, next_player_id: next_player_id} = game, player_id)
       when host_id === player_id and next_player_id === player_id do
     host_id = next_player_id = next_item(game.player_order, player_id)
@@ -89,6 +90,7 @@ defmodule Golf.Game do
     %Game{game | players: players, player_order: player_order}
   end
 
+  @spec start(t) :: {:ok, t}
   def start(game) do
     with {:ok, game} <- deal_hands(game),
          {:ok, game} <- deal_table_card(game) do
@@ -97,6 +99,7 @@ defmodule Golf.Game do
     end
   end
 
+  @spec handle_event(t, Event.t) :: {:ok, t}
   def handle_event(%{state: :uncover_two} = game, %{action: :uncover} = event) do
     %{player_id: player_id, data: %{hand_index: hand_index}} = event
 
@@ -245,8 +248,9 @@ defmodule Golf.Game do
     end
   end
 
-  defp deal_to_player_ids(game, []), do: game
-
+  defp deal_to_player_ids(game, []) do
+    game
+  end
   defp deal_to_player_ids(game, [player_id | player_ids]) do
     with {:ok, game} <- deal_hand(game, player_id) do
       deal_to_player_ids(game, player_ids)

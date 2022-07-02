@@ -9,15 +9,18 @@ defmodule Golf.Game.HandCard do
           face_down?: boolean
         }
 
+  @spec new(Card.t, term) :: t
   def new(card, opts \\ []) do
     face_down? = Keyword.get(opts, :face_down?, true)
     %HandCard{card: card, face_down?: face_down?}
   end
 
+  @spec flip_over(t) :: t
   def flip_over(hand_card) do
     %HandCard{hand_card | face_down?: false}
   end
 
+  @spec golf_value(t) :: integer | :none
   def golf_value(%{face_down?: true}), do: :none
   def golf_value(%{card: card}), do: Card.golf_value(card)
 end

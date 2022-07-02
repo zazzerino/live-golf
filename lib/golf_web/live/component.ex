@@ -23,9 +23,7 @@ defmodule GolfWeb.Live.Component do
   def footer(assigns) do
     ~H"""
     <footer>
-      <%= if @username do %>
-        <p>Logged in as <%= @username %></p>
-      <% end %>
+      <p>Logged in as <%= @username %></p>
     </footer>
     """
   end

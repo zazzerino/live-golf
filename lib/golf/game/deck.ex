@@ -24,11 +24,9 @@ defmodule Golf.Game.Deck do
   def deal([], _n) do
     {:error, :empty_deck}
   end
-
   def deal(deck, n) when length(deck) < n do
     {:error, :not_enough_cards}
   end
-
   def deal(deck, n) do
     {cards, deck} = Enum.split(deck, n)
     {:ok, cards, deck}

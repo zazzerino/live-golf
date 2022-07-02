@@ -9,6 +9,14 @@ defmodule GolfWeb.Router do
     end
   end
 
+  defp put_default_username(conn, _opts) do
+    if get_session(conn, :username) do
+      conn
+    else
+      put_session(conn, :username, Golf.User.default_name())
+    end
+  end
+
   pipeline :browser do
     plug :accepts, ["html"]
     plug :fetch_session
@@ -17,6 +25,7 @@ defmodule GolfWeb.Router do
     plug :protect_from_forgery
     plug :put_secure_browser_headers
     plug :put_session_id
+    plug :put_default_username
   end
 
   pipeline :api do
@@ -30,8 +39,9 @@ defmodule GolfWeb.Router do
     live "/game", Live.GameLive
 
     post "/user/name", UserController, :update_name
-    post "/user/game_id", UserController, :update_game_id
-    post "/user/logout", UserController, :logout
+    post "/user/clear", UserController, :clear_session
+
+    post "/game/create", GameController, :create_game
   end
 
   # Other scopes may use custom stacks.
@@ -46,13 +56,13 @@ defmodule GolfWeb.Router do
   # If your application does not have an admins-only section yet,
   # you can use Plug.BasicAuth to set up some basic authentication
   # as long as you are also using SSL (which you should anyway).
-  if Mix.env() in [:dev, :test] do
-    import Phoenix.LiveDashboard.Router
+  # if Mix.env() in [:dev, :test] do
+  #   import Phoenix.LiveDashboard.Router
 
-    scope "/" do
-      pipe_through :browser
+  #   scope "/" do
+  #     pipe_through :browser
 
-      live_dashboard "/dashboard", metrics: GolfWeb.Telemetry
-    end
-  end
+  #     live_dashboard "/dashboard", metrics: GolfWeb.Telemetry
+  #   end
+  # end
 end

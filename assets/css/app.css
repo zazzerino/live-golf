@@ -127,3 +127,8 @@
   transform-box: fill-box;
   transform-origin: center;
 }
+
+form button {
+  margin-top: auto;
+  margin-bottom: auto;
+}
