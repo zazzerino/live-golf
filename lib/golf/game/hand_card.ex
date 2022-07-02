@@ -5,7 +5,7 @@ defmodule Golf.Game.HandCard do
   defstruct [:card, :face_down?]
 
   @type t :: %HandCard{
-          card: Card.t(),
+          card: Card.t,
           face_down?: boolean
         }
 

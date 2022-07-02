@@ -1,5 +1,5 @@
 defmodule Golf.Game.Card do
-  @type t :: String.t()
+  @type t :: String.t
 
   def golf_value(card) do
     <<rank, _suit>> = card

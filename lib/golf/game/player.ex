@@ -4,13 +4,13 @@ defmodule Golf.Game.Player do
 
   defstruct [:id, :name, :held_card, hand: []]
 
-  @type id :: String.t();
+  @type id :: String.t;
 
   @type t :: %Player{
           id: id,
-          name: String.t(),
-          held_card: Card.t() | nil,
-          hand: [HandCard.t()]
+          name: String.t,
+          held_card: Card.t | nil,
+          hand: [HandCard.t]
         }
 
   @hand_size 6
@@ -20,7 +20,7 @@ defmodule Golf.Game.Player do
     %Player{id: id, name: name}
   end
 
-  @spec give_cards(t, [Card.t()]) :: t
+  @spec give_cards(t, [Card.t]) :: t
   def give_cards(player, cards) do
     hand = Enum.map(cards, &HandCard.new/1)
     %Player{player | hand: hand}

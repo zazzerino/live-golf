@@ -15,26 +15,26 @@ defmodule Golf.Game do
     events: []
   ]
 
-  @type id :: String.t()
+  @type id :: String.t
 
   @type state :: :init | :uncover_two | :take | :discard | :uncover | :over
 
   @type t :: %Game{
           id: id,
           state: state,
-          deck: Deck.t(),
-          table_cards: [Card.t()],
-          players: %{Player.id() => Player.t()},
-          player_order: [Player.id()],
-          host_id: Player.id(),
-          next_player_id: Player.id(),
+          deck: Deck.t,
+          table_cards: [Card.t],
+          players: %{Player.id => Player.t},
+          player_order: [Player.id],
+          host_id: Player.id,
+          next_player_id: Player.id,
           final_turn?: boolean,
-          events: [Event]
+          events: [Event.t]
         }
 
   @deck_count 2
 
-  @spec new(id, Player.t()) :: t
+  @spec new(id, Player.t) :: t
   def new(id, player) do
     deck = Deck.new(@deck_count) |> Enum.shuffle()
 
@@ -49,11 +49,10 @@ defmodule Golf.Game do
     }
   end
 
-  @spec add_player(t, Player.t()) :: t
+  @spec add_player(t, Player.t) :: t
   def add_player(game, player) do
     players = Map.put(game.players, player.id, player)
     player_order = game.player_order ++ [player.id]
-
     %Game{game | players: players, player_order: player_order}
   end
 
@@ -260,7 +259,7 @@ defmodule Golf.Game do
   end
 
   defp next_item(list, item) do
-    if index = Enum.find_index(list, &(&1 === item)) do
+    if index = Enum.find_index(list, &(&1 == item)) do
       last_item? = index == length(list) - 1
 
       if last_item? do
@@ -273,8 +272,7 @@ defmodule Golf.Game do
 
   defp remove_game_player(game, player_id) do
     players = Map.delete(game.players, player_id)
-    player_order = Enum.reject(game.player_order, &(&1 === player_id))
-
+    player_order = Enum.reject(game.player_order, &(&1 == player_id))
     {players, player_order}
   end
 

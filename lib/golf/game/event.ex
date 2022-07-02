@@ -8,7 +8,7 @@ defmodule Golf.Game.Event do
 
   @type t :: %Event{
           action: action,
-          player_id: Player.id(),
+          player_id: Player.id,
           data: %{}
         }
 

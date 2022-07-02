@@ -13,7 +13,7 @@ defmodule GolfWeb.UserController do
 
   def logout(conn, _params) do
     conn
-    |> configure_session(renew: true)
+    # |> configure_session(renew: true)
     |> clear_session()
     |> redirect(to: "/")
   end
