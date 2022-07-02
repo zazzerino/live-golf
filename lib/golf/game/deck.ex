@@ -11,7 +11,6 @@ defmodule Golf.Game.Deck do
   def new(1) do
     @card_list
   end
-
   def new(n) do
     @card_list ++ new(n - 1)
   end

@@ -1,5 +1,6 @@
 defmodule GolfWeb.Live.Component do
   import Phoenix.LiveView.Helpers
+
   alias GolfWeb.Router.Helpers, as: Routes
 
   def header(assigns) do

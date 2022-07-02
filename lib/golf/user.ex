@@ -1,5 +1,6 @@
 defmodule Golf.User do
   use Ecto.Schema
+
   import Ecto.Changeset
 
   embedded_schema do

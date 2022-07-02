@@ -1,6 +1,8 @@
 defmodule GolfWeb.Live.PageLive do
   use GolfWeb, :live_view
+
   import GolfWeb.Live.Component
+
   alias Golf.User
 
   @impl true
@@ -61,12 +63,12 @@ defmodule GolfWeb.Live.PageLive do
   @impl true
   def handle_event("save_name", %{"user" => attrs}, socket) do
     changeset = User.name_changeset(%User{}, attrs)
-    socket = assign(socket, name_changeset: changeset)
 
     if changeset.valid? do
-      {:noreply, assign(socket, trigger_submit: true)}
+      {:noreply, assign(socket, name_changeset: changeset, trigger_submit: true)}
     else
-      {:noreply, socket}
+      changeset = User.name_changeset(%User{})
+      {:noreply, assign(socket, name_changeset: changeset)}
     end
   end
 

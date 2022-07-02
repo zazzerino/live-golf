@@ -1,6 +1,8 @@
 defmodule GolfWeb.Live.GameLive do
   use GolfWeb, :live_view
+
   import GolfWeb.Live.Component
+
   # alias Golf.Game
 
   @impl true

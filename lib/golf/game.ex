@@ -230,8 +230,8 @@ defmodule Golf.Game do
   end
 
   defp deal_table_card(game) do
-    with {:ok, card, deck} <- Deck.deal(game.deck),
-         table_cards <- [card | game.table_cards] do
+    with {:ok, card, deck} <- Deck.deal(game.deck) do
+      table_cards = [card | game.table_cards]
       game = %Game{game | deck: deck, table_cards: table_cards}
       {:ok, game}
     end
