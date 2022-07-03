@@ -4,35 +4,37 @@ defmodule Golf.Game do
 
   defstruct [
     :id,
+    :timer,
     :state,
     :host_id,
     :next_player_id,
     deck: [],
     table_cards: [],
-    players: %{},
     player_order: [],
+    players: %{},
     final_turn?: false,
     events: []
   ]
 
-  @type id :: String.t
+  @inactivity_timeout 1000 * 60 * 1
+  @deck_count 2
 
+  @type id :: String.t
   @type state :: :init | :uncover_two | :take | :discard | :uncover | :over
 
   @type t :: %Game{
           id: id,
+          timer: reference | nil,
           state: state,
           deck: Deck.t,
           table_cards: [Card.t],
-          players: %{Player.id => Player.t},
           player_order: [Player.id],
+          players: %{Player.id => Player.t},
           host_id: Player.id,
           next_player_id: Player.id,
           final_turn?: boolean,
           events: [Event.t]
         }
-
-  @deck_count 2
 
   @spec new(id, Player.t) :: t
   def new(id, player) do
@@ -47,13 +49,16 @@ defmodule Golf.Game do
       host_id: player.id,
       next_player_id: player.id
     }
+    |> set_timer()
   end
 
   @spec add_player(t, Player.t) :: t
   def add_player(game, player) do
     players = Map.put(game.players, player.id, player)
     player_order = game.player_order ++ [player.id]
+
     %Game{game | players: players, player_order: player_order}
+    |> reset_timer()
   end
 
   @spec remove_player(t, Player.id) :: t
@@ -69,33 +74,40 @@ defmodule Golf.Game do
         host_id: host_id,
         next_player_id: next_player_id
     }
+    |> reset_timer()
   end
 
   def remove_player(%{host_id: host_id} = game, player_id)
       when host_id === player_id do
     host_id = next_item(game.player_order, player_id)
     {players, player_order} = remove_game_player(game, player_id)
+
     %Game{game | players: players, player_order: player_order, host_id: host_id}
+    |> reset_timer()
   end
 
   def remove_player(%{next_player_id: next_player_id} = game, player_id)
       when next_player_id === player_id do
     next_player_id = next_item(game.player_order, player_id)
     {players, player_order} = remove_game_player(game, player_id)
+
     %Game{game | players: players, player_order: player_order, next_player_id: next_player_id}
+    |> reset_timer()
   end
 
   def remove_player(game, player_id) do
     {players, player_order} = remove_game_player(game, player_id)
+
     %Game{game | players: players, player_order: player_order}
+    |> reset_timer()
   end
 
-  @spec start(t) :: {:ok, t}
+  @spec start(t) :: {:ok, t} | Deck.deal_error()
   def start(game) do
     with {:ok, game} <- deal_hands(game),
          {:ok, game} <- deal_table_card(game) do
       game = %Game{game | state: :uncover_two}
-      {:ok, game}
+      {:ok, reset_timer(game)}
     end
   end
 
@@ -112,7 +124,7 @@ defmodule Golf.Game do
       events = [event | game.events]
 
       game = %Game{game | state: state, players: players, events: events}
-      {:ok, game}
+      {:ok, reset_timer(game)}
     end
   end
 
@@ -132,7 +144,7 @@ defmodule Golf.Game do
         events: events
     }
 
-    {:ok, game}
+    {:ok, reset_timer(game)}
   end
 
   def handle_event(%{final_turn?: true} = game, %{action: :uncover} = event) do
@@ -151,7 +163,7 @@ defmodule Golf.Game do
         events: events
     }
 
-    {:ok, game}
+    {:ok, reset_timer(game)}
   end
 
   def handle_event(%{state: :take} = game, %{action: :take_from_deck} = event) do
@@ -159,7 +171,7 @@ defmodule Golf.Game do
          players <- Map.update!(game.players, event.player_id, &Player.hold_card(&1, card)) do
       events = [event | game.events]
       game = %Game{game | state: :discard, deck: deck, players: players, events: events}
-      {:ok, game}
+      {:ok, reset_timer(game)}
     end
   end
 
@@ -176,7 +188,7 @@ defmodule Golf.Game do
         events: events
     }
 
-    {:ok, game}
+    {:ok, reset_timer(game)}
   end
 
   def handle_event(%{state: :discard} = game, %{action: :discard} = event) do
@@ -203,7 +215,7 @@ defmodule Golf.Game do
         events: events
     }
 
-    {:ok, game}
+    {:ok, reset_timer(game)}
   end
 
   def handle_event(%{state: :discard} = game, %{action: :swap_card} = event) do
@@ -229,7 +241,11 @@ defmodule Golf.Game do
         events: events
     }
 
-    {:ok, game}
+    {:ok, reset_timer(game)}
+  end
+
+  def no_players?(game) do
+    Enum.empty?(game.players)
   end
 
   defp deal_table_card(game) do
@@ -251,6 +267,7 @@ defmodule Golf.Game do
   defp deal_to_player_ids(game, []) do
     game
   end
+
   defp deal_to_player_ids(game, [player_id | player_ids]) do
     with {:ok, game} <- deal_hand(game, player_id) do
       deal_to_player_ids(game, player_ids)
@@ -296,5 +313,22 @@ defmodule Golf.Game do
       end
 
     {state, final_turn?}
+  end
+
+  defp set_timer(game) do
+    %Game{game | timer: Process.send_after(self(), :inactivity_timeout, @inactivity_timeout)}
+  end
+
+  defp cancel_timer(%Game{timer: timer} = game) when is_reference(timer) do
+    Process.cancel_timer(timer)
+    %Game{game | timer: nil}
+  end
+
+  defp cancel_timer(game), do: game
+
+  defp reset_timer(game) do
+    game
+    |> cancel_timer()
+    |> set_timer()
   end
 end

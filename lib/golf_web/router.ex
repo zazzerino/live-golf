@@ -35,13 +35,14 @@ defmodule GolfWeb.Router do
   scope "/", GolfWeb do
     pipe_through :browser
 
-    live "/", Live.PageLive
-    live "/game", Live.GameLive
+    live "/", PageLive
+    live "/game", GameLive
 
     post "/user/name", UserController, :update_name
-    post "/user/clear", UserController, :clear_session
+    post "/user/forget", UserController, :forget
 
     post "/game/create", GameController, :create_game
+    post "/game/leave", GameController, :leave_game
   end
 
   # Other scopes may use custom stacks.

@@ -1,4 +1,4 @@
-defmodule GolfWeb.Live.GameLive do
+defmodule GolfWeb.GameLive do
   use GolfWeb, :live_view
 
   import GolfWeb.Live.Component
@@ -18,7 +18,8 @@ defmodule GolfWeb.Live.GameLive do
         session_id: session["session_id"],
         game_id: game_id,
         game: nil,
-        trigger_submit: false
+        trigger_submit_create: false,
+        trigger_submit_leave: false
       )
 
     if connected?(socket) and is_binary(game_id) do
@@ -33,26 +34,42 @@ defmodule GolfWeb.Live.GameLive do
   def render(assigns) do
     ~H"""
     <.header socket={@socket} />
-    <h2>Hello Game</h2>
+
+    <%= if @game do %>
+      <h2><%= @game.id %></h2>
+    <% else %>
+      <h2>&nbsp</h2>
+    <% end %>
 
     <svg class="game-svg"
          width="500"
          height="600"
          viewbox="-250, -300, 500, 600"
     >
+      <%= if @game do %>
+        <.deck state={@game.state} />
+      <% end %>
     </svg>
 
-    <%= if @game_id do %>
-      <p>Game: <%= @game_id %></p>
-    <% end %>
+    <div class="game-controls">
+      <.form for={:create_game}
+             action={Routes.game_path(@socket, :create_game)}
+             phx-submit="create_game"
+             phx-trigger-action={@trigger_submit_create}
+      >
+        <%= submit "Create game" %>
+      </.form>
 
-    <.form for={:create_game}
-           action={Routes.game_path(@socket, :create_game)}
-           phx-submit="create_game"
-           phx-trigger-action={@trigger_submit}
-    >
-      <%= submit "Create game" %>
-    </.form>
+      <%= if @game do %>
+        <.form for={:leave_game}
+               action={Routes.game_path(@socket, :leave_game)}
+               phx-submit="leave_game"
+               phx-trigger-action={@trigger_submit_leave}
+        >
+          <%= submit "Leave game" %>
+        </.form>
+      <% end %>
+    </div>
 
     <.footer username={@username} />
     """
@@ -77,54 +94,18 @@ defmodule GolfWeb.Live.GameLive do
   end
 
   @impl true
-  def handle_event("create_game", _val, socket) do
-    {:noreply, assign(socket, trigger_submit: true)}
+  def handle_event("create_game", _value, socket) do
+    {:noreply, assign(socket, trigger_submit_create: true)}
   end
 
   @impl true
-  def handle_event("leave_game", _val, socket) do
-    {:noreply, socket}
+  def handle_event("leave_game", _value, socket) do
+    {:noreply, assign(socket, trigger_submit_leave: true)}
   end
 
   @impl true
   def handle_params(_params, _uri, socket) do
     {:noreply, socket}
-  end
-
-  # component functions
-
-  def card_image(assigns) do
-    ~H"""
-    <image
-      class={"card #{@class}"}
-      x={@x - 30}
-      y={@y - 42}
-      href={"/images/cards/#{@card}.svg"}
-      width="12%"
-    />
-    """
-  end
-
-  def deck(assigns) do
-    ~H"""
-    <.card_image
-      class="deck"
-      x={if @state == :init, do: 0, else: -32}
-      y={0}
-      card="2B"
-    />
-    """
-  end
-
-  def table_card(assigns) do
-    ~H"""
-      <.card_image
-        class="table-card"
-        x={32}
-        y={0}
-        card={@card}
-      />
-    """
   end
 end
 
