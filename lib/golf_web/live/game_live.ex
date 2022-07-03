@@ -1,7 +1,7 @@
 defmodule GolfWeb.GameLive do
   use GolfWeb, :live_view
 
-  import GolfWeb.Live.Component
+  import GolfWeb.Component
 
   require Logger
 
@@ -33,8 +33,6 @@ defmodule GolfWeb.GameLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <.header socket={@socket} />
-
     <%= if @game do %>
       <h2><%= @game.id %></h2>
     <% else %>
@@ -48,6 +46,10 @@ defmodule GolfWeb.GameLive do
     >
       <%= if @game do %>
         <.deck state={@game.state} />
+
+        <%= unless @game.state == :not_started do %>
+          <.table_card card={hd(@game.table_cards)} />
+        <% end %>
       <% end %>
     </svg>
 
@@ -68,10 +70,14 @@ defmodule GolfWeb.GameLive do
         >
           <%= submit "Leave game" %>
         </.form>
+
+        <%= if @session_id == @game.host_id && @game.state == :not_started do %>
+          <.form for={:start_game}>
+            <button type="button" phx-click="start_game">Start game</button>
+          </.form>
+        <% end %>
       <% end %>
     </div>
-
-    <.footer username={@username} />
     """
   end
 
@@ -79,7 +85,6 @@ defmodule GolfWeb.GameLive do
   def handle_info({:load_game, game_id}, socket) do
     case Golf.lookup_game(game_id) do
       [] ->
-        Logger.warn("Game #{game_id} not found")
         {:noreply, socket}
 
       [{pid, _}] ->
@@ -99,6 +104,13 @@ defmodule GolfWeb.GameLive do
   end
 
   @impl true
+  def handle_event("start_game", _value, socket) do
+    %{game_id: game_id, session_id: session_id} = socket.assigns
+    GameServer.start_game(game_id, session_id)
+    {:noreply, socket}
+  end
+
+  @impl true
   def handle_event("leave_game", _value, socket) do
     {:noreply, assign(socket, trigger_submit_leave: true)}
   end
@@ -108,15 +120,3 @@ defmodule GolfWeb.GameLive do
     {:noreply, socket}
   end
 end
-
-# <div class="game-buttons">
-#   <button phx-click="create_game">Create Game</button>
-
-#   <%= if @game do %>
-#     <%= if @game.host_id == @session_id do %>
-#       <button phx-click="start_game">Start Game</button>
-#     <% end %>
-
-#     <button phx-click="leave_game">Leave Game</button>
-#   <% end %>
-# </div>

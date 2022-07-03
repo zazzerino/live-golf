@@ -16,11 +16,13 @@ defmodule Golf.Game do
     events: []
   ]
 
-  @inactivity_timeout 1000 * 60 * 1
   @deck_count 2
+  @max_players 4
+
+  @inactivity_timeout 1000 * 60 * 1
 
   @type id :: String.t
-  @type state :: :init | :uncover_two | :take | :discard | :uncover | :over
+  @type state :: :not_started | :flip_two | :take | :discard | :flip | :over
 
   @type t :: %Game{
           id: id,
@@ -42,7 +44,7 @@ defmodule Golf.Game do
 
     %Game{
       id: id,
-      state: :init,
+      state: :not_started,
       deck: deck,
       players: %{player.id => player},
       player_order: [player.id],
@@ -52,13 +54,18 @@ defmodule Golf.Game do
     |> set_timer()
   end
 
-  @spec add_player(t, Player.t) :: t
+  @spec add_player(t, Player.t) :: {:ok, t} | {:error, term}
+  def add_player(game, _player)
+      when length(game.player_order) >= @max_players do
+    {:error, "max players"}
+  end
+
   def add_player(game, player) do
     players = Map.put(game.players, player.id, player)
     player_order = game.player_order ++ [player.id]
+    game = %Game{game | players: players, player_order: player_order}
 
-    %Game{game | players: players, player_order: player_order}
-    |> reset_timer()
+    {:ok, reset_timer(game)}
   end
 
   @spec remove_player(t, Player.id) :: t
@@ -78,7 +85,7 @@ defmodule Golf.Game do
   end
 
   def remove_player(%{host_id: host_id} = game, player_id)
-      when host_id === player_id do
+      when host_id == player_id do
     host_id = next_item(game.player_order, player_id)
     {players, player_order} = remove_game_player(game, player_id)
 
@@ -87,7 +94,7 @@ defmodule Golf.Game do
   end
 
   def remove_player(%{next_player_id: next_player_id} = game, player_id)
-      when next_player_id === player_id do
+      when next_player_id == player_id do
     next_player_id = next_item(game.player_order, player_id)
     {players, player_order} = remove_game_player(game, player_id)
 
@@ -102,17 +109,19 @@ defmodule Golf.Game do
     |> reset_timer()
   end
 
-  @spec start(t) :: {:ok, t} | Deck.deal_error()
-  def start(game) do
+  @spec start(t) :: {:ok, t} | Deck.deal_error
+  def start(game) when game.state == :not_started do
     with {:ok, game} <- deal_hands(game),
          {:ok, game} <- deal_table_card(game) do
-      game = %Game{game | state: :uncover_two}
+      game = %Game{game | state: :flip_two}
       {:ok, reset_timer(game)}
     end
   end
 
+  def start(game), do: game
+
   @spec handle_event(t, Event.t) :: {:ok, t}
-  def handle_event(%{state: :uncover_two} = game, %{action: :uncover} = event) do
+  def handle_event(%{state: :flip_two} = game, %{action: :flip_card} = event) do
     %{player_id: player_id, data: %{hand_index: hand_index}} = event
 
     if Player.flipped_two?(game.players[player_id]) do
@@ -128,7 +137,7 @@ defmodule Golf.Game do
     end
   end
 
-  def handle_event(%{state: :uncover} = game, %{action: :uncover} = event) do
+  def handle_event(%{state: :flip} = game, %{action: :flip_card} = event) do
     %{player_id: player_id, data: %{hand_index: hand_index}} = event
     events = [event | game.events]
     players = Map.update!(game.players, event.player_id, &Player.flip_card(&1, hand_index))
@@ -147,7 +156,7 @@ defmodule Golf.Game do
     {:ok, reset_timer(game)}
   end
 
-  def handle_event(%{final_turn?: true} = game, %{action: :uncover} = event) do
+  def handle_event(%{final_turn?: true} = game, %{action: :flip} = event) do
     %{player_id: player_id, data: %{hand_index: hand_index}} = event
     events = [event | game.events]
     players = Map.update!(game.players, event.player_id, &Player.flip_card(&1, hand_index))
@@ -203,7 +212,7 @@ defmodule Golf.Game do
       if Player.flipped_card_count(player) === Player.hand_size() - 1 do
         {:take, next_item(game.player_order, event.player_id)}
       else
-        {:uncover, game.next_player_id}
+        {:flip, game.next_player_id}
       end
 
     game = %Game{
@@ -246,6 +255,11 @@ defmodule Golf.Game do
 
   def no_players?(game) do
     Enum.empty?(game.players)
+  end
+
+  def change_player_name(game, player_id, new_name) do
+    update_in(game.players[player_id],
+              &(Player.change_name(&1, new_name)))
   end
 
   defp deal_table_card(game) do

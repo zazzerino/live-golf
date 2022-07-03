@@ -1,4 +1,4 @@
-defmodule GolfWeb.Live.Component do
+defmodule GolfWeb.Component do
   import Phoenix.LiveView.Helpers
 
   alias GolfWeb.Router.Helpers, as: Routes
@@ -9,10 +9,10 @@ defmodule GolfWeb.Live.Component do
       <nav>
         <ul>
           <li>
-            <%= live_patch "home", to: Routes.live_path(@socket, GolfWeb.PageLive) %>
+            <%= live_patch "home", to: Routes.live_path(@conn, GolfWeb.PageLive) %>
           </li>
           <li>
-            <%= live_patch "game", to: Routes.live_path(@socket, GolfWeb.GameLive) %>
+            <%= live_patch "game", to: Routes.live_path(@conn, GolfWeb.GameLive) %>
           </li>
         </ul>
       </nav>
@@ -44,7 +44,7 @@ defmodule GolfWeb.Live.Component do
     ~H"""
     <.card_image
       class="deck"
-      x={if @state == :init, do: 0, else: -32}
+      x={if @state == :not_started, do: 0, else: -32}
       y={0}
       card="2B"
     />

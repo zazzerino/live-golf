@@ -1,8 +1,6 @@
 defmodule GolfWeb.PageLive do
   use GolfWeb, :live_view
 
-  import GolfWeb.Live.Component
-
   alias Golf.User
 
   @impl true
@@ -21,8 +19,6 @@ defmodule GolfWeb.PageLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <.header socket={@socket} />
-
     <h2>Home</h2>
 
     <.form let={f}
@@ -45,10 +41,6 @@ defmodule GolfWeb.PageLive do
     >
       <%= submit "Forget me" %>
     </.form>
-
-    <%= if @username do %>
-      <.footer username={@username} />
-    <% end %>
     """
   end
 

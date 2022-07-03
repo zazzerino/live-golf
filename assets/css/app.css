@@ -4,7 +4,8 @@
 /* Alerts and form errors used by phx.new */
 .alert {
   padding: 15px;
-  margin-bottom: 15px;
+  padding-top: 20px;
+  /* margin-bottom: 20px; */
   border: 1px solid transparent;
   border-radius: 4px;
 }
@@ -141,6 +142,10 @@ header nav a {
   display: flex;
 }
 
-.game-controls button {
+.game-controls form {
   margin-right: 1rem;
+}
+
+footer {
+  margin-left: 2rem;
 }

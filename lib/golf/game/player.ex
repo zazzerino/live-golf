@@ -22,6 +22,11 @@ defmodule Golf.Game.Player do
     %Player{id: id, name: name}
   end
 
+  @spec change_name(t, name) :: t
+  def change_name(player, new_name) do
+    %Player{player | name: new_name}
+  end
+
   @spec give_cards(t, [Card.t]) :: t
   def give_cards(player, cards) do
     hand = Enum.map(cards, &HandCard.new/1)
