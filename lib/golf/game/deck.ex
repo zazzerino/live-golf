@@ -37,7 +37,7 @@ defmodule Golf.Game.Deck do
 
   @spec deal(t) :: {:ok, Card.t, t} | deal_error
   def deal(deck) do
-    with {:ok, [card], deck} <- deal(deck, 1) do
+    with {:ok, [card | []], deck} <- deal(deck, 1) do
       {:ok, card, deck}
     end
   end

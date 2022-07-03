@@ -143,9 +143,10 @@ header nav a {
 }
 
 .game-controls form {
+  margin-top: 1rem;
   margin-right: 1rem;
 }
 
-footer {
-  margin-left: 2rem;
+footer p {
+  text-align: center;
 }

@@ -1,15 +1,12 @@
 defmodule Golf.GameServer do
   use GenServer, restart: :transient
+
   require Logger
 
   alias Phoenix.PubSub
   alias Golf.Game
 
   # Client
-
-  def start({game_id, player}) do
-    GenServer.start(__MODULE__, {game_id, player}, name: via_tuple(game_id))
-  end
 
   def start_link({game_id, player}) do
     GenServer.start_link(__MODULE__, {game_id, player}, name: via_tuple(game_id))
@@ -100,6 +97,7 @@ defmodule Golf.GameServer do
   @impl true
   def handle_info(:inactivity_timeout, game) do
     Logger.info("Game #{game.id} was ended for inactivity")
+    PubSub.broadcast(Golf.PubSub, "game:#{game.id}", :game_inactive)
     {:stop, :normal, game}
   end
 

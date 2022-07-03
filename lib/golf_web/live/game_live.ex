@@ -2,7 +2,6 @@ defmodule GolfWeb.GameLive do
   use GolfWeb, :live_view
 
   import GolfWeb.Component
-
   require Logger
 
   alias Phoenix.PubSub
@@ -96,6 +95,16 @@ defmodule GolfWeb.GameLive do
   @impl true
   def handle_info({:game_state, game}, socket) do
     {:noreply, assign(socket, game: game)}
+  end
+
+  @impl true
+  def handle_info(:game_inactive, socket) do
+    socket =
+      socket
+      |> assign(game_id: nil, game: nil)
+      |> put_flash(:error, "Game inactive.")
+
+    {:noreply, socket}
   end
 
   @impl true

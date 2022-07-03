@@ -9,7 +9,9 @@ defmodule GolfWeb.PageLive do
       assign(socket,
         username: session["username"],
         name_changeset: User.name_changeset(%User{}),
+        game_changeset: User.game_id_changeset(%User{}),
         trigger_submit_name: false,
+        trigger_submit_join: false,
         trigger_submit_forget: false
       )
 

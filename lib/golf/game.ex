@@ -19,7 +19,7 @@ defmodule Golf.Game do
   @deck_count 2
   @max_players 4
 
-  @inactivity_timeout 1000 * 60 * 1
+  @inactivity_timeout 1000 * 60 * 10
 
   @type id :: String.t
   @type state :: :not_started | :flip_two | :take | :discard | :flip | :over
@@ -70,7 +70,8 @@ defmodule Golf.Game do
 
   @spec remove_player(t, Player.id) :: t
   def remove_player(%{host_id: host_id, next_player_id: next_player_id} = game, player_id)
-      when host_id === player_id and next_player_id === player_id do
+      when host_id === player_id
+      and next_player_id === player_id do
     host_id = next_player_id = next_item(game.player_order, player_id)
     {players, player_order} = remove_game_player(game, player_id)
 
@@ -312,19 +313,11 @@ defmodule Golf.Game do
   end
 
   defp check_game_over(player_id, players, final_turn?) do
-    state =
-      if Enum.all?(Map.values(players), &Player.all_flipped?/1) do
-        :over
-      else
-        :take
-      end
+    all_flipped? = Enum.all?(Map.values(players), &Player.all_flipped?/1)
+    state = if all_flipped?, do: :over, else: :take
 
-    final_turn? =
-      if Player.all_flipped?(players[player_id]) do
-        true
-      else
-        final_turn?
-      end
+    player_flipped? = Player.all_flipped?(players[player_id])
+    final_turn? = if player_flipped?, do: true, else: final_turn?
 
     {state, final_turn?}
   end
