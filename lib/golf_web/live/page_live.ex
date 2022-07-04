@@ -27,13 +27,26 @@ defmodule GolfWeb.PageLive do
            for={@name_changeset}
            action={Routes.user_path(@socket, :update_name)}
            phx-change="validate_name"
-           phx-submit="save_name"
+           phx-submit="change_name"
            phx-trigger-action={@trigger_submit_name}
     >
       <%= label f, :name %>
       <%= text_input f, :name, required: true %>
       <%= error_tag f, :name %>
       <%= submit "Update name" %>
+    </.form>
+
+    <.form let={f}
+           for={@game_changeset}
+           action={Routes.game_path(@socket, :join_game)}
+           phx-change="validate_game"
+           phx-submit="join_game"
+           phx-trigger-action={@trigger_submit_join}
+    >
+      <%= label f, :game_id %>
+      <%= text_input f, :game_id, required: true %>
+      <%= error_tag f, :game_id %>
+      <%= submit "Join game" %>
     </.form>
 
     <.form for={:forget}
@@ -58,7 +71,7 @@ defmodule GolfWeb.PageLive do
   end
 
   @impl true
-  def handle_event("save_name", %{"user" => attrs}, socket) do
+  def handle_event("change_name", %{"user" => attrs}, socket) do
     changeset = User.name_changeset(%User{}, attrs)
 
     if changeset.valid? do
@@ -68,6 +81,33 @@ defmodule GolfWeb.PageLive do
         socket
         |> assign(name_changeset: User.name_changeset(%User{}))
         |> put_flash(:error, "Invalid username.")
+
+      {:noreply, socket}
+    end
+  end
+
+  @impl true
+  def handle_event("validate_game", %{"user" => attrs}, socket) do
+    changeset =
+      %User{}
+      |> User.game_id_changeset(attrs)
+      |> Map.put(:action, :validate)
+
+    socket = assign(socket, :game_changeset, changeset)
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("join_game", %{"user" => attrs}, socket) do
+    changeset = User.game_id_changeset(%User{}, attrs)
+
+    if changeset.valid? do
+      {:noreply, assign(socket, game_changeset: changeset, trigger_submit_join: true)}
+    else
+      socket =
+        socket
+        |> assign(game_changeset: User.game_id_changeset(%User{}))
+        |> put_flash(:error, "Invalid game id.")
 
       {:noreply, socket}
     end

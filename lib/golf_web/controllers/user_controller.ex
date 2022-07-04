@@ -10,7 +10,7 @@ defmodule GolfWeb.UserController do
 
     conn
     |> put_session(:username, name)
-    |> put_flash(:info, "User logged in.")
+    |> put_flash(:info, "Name updated.")
     |> redirect(to: "/")
   end
 

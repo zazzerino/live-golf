@@ -66,13 +66,13 @@ defmodule GolfWeb.Component do
     """
   end
 
-  defp deck_offset_game_started, do: -card_width() / 2 - 2
+  defp deck_offset_started, do: -card_width() / 2 - 2
 
   def deck(assigns) do
     ~H"""
     <.card_image
       class="deck"
-      x={if @state == :not_started, do: 0, else: deck_offset_game_started()}
+      x={if @state == :not_started, do: 0, else: deck_offset_started()}
       y={0}
       card="2B"
     />
@@ -89,6 +89,34 @@ defmodule GolfWeb.Component do
         y={0}
         card={@card}
       />
+    """
+  end
+
+  @hand_padding 2
+  def hand_padding, do: @hand_padding
+
+  def hand_card_x(index) do
+    x_offset = rem(index, 3)
+    card_width() * x_offset + hand_padding() * x_offset - card_width()
+  end
+
+  def hand_card_y(index) do
+    y_offset = if index < 3, do: 0, else: card_height() + hand_padding()
+    y_offset - card_height() / 2
+  end
+
+  def hand(assigns) do
+    ~H"""
+    <g class="hand">
+      <%= for {handcard, index} <- Enum.with_index(@cards) do %>
+        <.card_image
+          class={"hand_#{index}"}
+          card={if handcard.face_down?, do: "2B", else: handcard.card}
+          x={hand_card_x(index)}
+          y={hand_card_y(index)}
+        />
+      <% end %>
+    </g>
     """
   end
 end

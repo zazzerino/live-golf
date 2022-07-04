@@ -48,6 +48,7 @@ defmodule GolfWeb.GameLive do
 
         <%= unless @game.state == :not_started do %>
           <.table_card card={hd(@game.table_cards)} />
+
         <% end %>
       <% end %>
     </svg>
@@ -70,7 +71,8 @@ defmodule GolfWeb.GameLive do
           <%= submit "Leave game" %>
         </.form>
 
-        <%= if @session_id == @game.host_id && @game.state == :not_started do %>
+        <%= if @session_id == @game.host_id
+            and @game.state == :not_started do %>
           <.form for={:start_game}>
             <button type="button" phx-click="start_game">Start game</button>
           </.form>

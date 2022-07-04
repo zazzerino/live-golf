@@ -33,12 +33,23 @@ defmodule GolfWeb.GameController do
   end
 
   def join_game(conn, %{"user" => %{"game_id" => game_id}}) do
-    %{"session_id" => session_id, "username" => username} = get_session(conn)
-    _player = Game.Player.new(session_id, username)
-    # GameServer.add
+    game_id = String.upcase(game_id, :ascii)
 
-    conn
-    |> put_session(:game_id, game_id)
-    |> redirect(to: "/game")
+    case Golf.lookup_game(game_id) do
+      [] ->
+        conn
+        |> put_flash(:error, "Game not found.")
+        |> redirect(to: "/")
+
+      [{pid, _}] ->
+        %{"session_id" => player_id, "username" => username} = get_session(conn)
+        player = Game.Player.new(player_id, username)
+        GameServer.add_player(pid, player)
+
+        conn
+        |> put_session(:game_id, game_id)
+        |> put_flash(:info, "Game joined.")
+        |> redirect(to: "/game")
+    end
   end
 end

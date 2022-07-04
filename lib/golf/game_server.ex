@@ -24,8 +24,20 @@ defmodule Golf.GameServer do
     GenServer.cast(via_tuple(id), {:start_game, player_id})
   end
 
+  def add_player(pid, player) when is_pid(pid) do
+    GenServer.cast(pid, {:add_player, player})
+  end
+
+  def add_player(id, player) when is_binary(id) do
+    GenServer.cast(via_tuple(id), {:add_player, player})
+  end
+
   def remove_player(id, player_id) when is_binary(id) do
     GenServer.cast(via_tuple(id), {:remove_player, player_id})
+  end
+
+  def handle_event(id, event) when is_binary(id) do
+    GenServer.cast(via_tuple(id), {:game_event, event})
   end
 
   def update_player_name(id, player_id, new_name) when is_binary(id) do
@@ -88,6 +100,13 @@ defmodule Golf.GameServer do
   end
 
   @impl true
+  def handle_cast({:game_event, event}, game) do
+    {:ok, game} = Game.handle_event(game, event)
+    broadcast_game_state(game)
+    {:noreply, game}
+  end
+
+  @impl true
   def handle_cast({:update_player_name, player_id, new_name}, game) do
     game = Game.change_player_name(game, player_id, new_name)
     broadcast_game_state(game)
@@ -105,14 +124,3 @@ defmodule Golf.GameServer do
     PubSub.broadcast(Golf.PubSub, "game:#{game.id}", {:game_state, game})
   end
 end
-
-# def handle_event(id, event) when is_binary(id) do
-#   GenServer.call(via_tuple(id), {:game_event, event})
-# end
-
-# @impl true
-# def handle_call({:game_event, event}, _from, game) do
-#   with {:ok, game} <- Game.handle_event(game, event) do
-#     {:reply, {:ok, game}, game}
-#   end
-# end

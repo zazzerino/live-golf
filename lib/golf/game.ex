@@ -19,7 +19,7 @@ defmodule Golf.Game do
   @deck_count 2
   @max_players 4
 
-  @inactivity_timeout 1000 * 60 * 10
+  @inactivity_timeout 1000 * 60 * 20
 
   @type id :: String.t
   @type state :: :not_started | :flip_two | :take | :discard | :flip | :over
@@ -54,7 +54,7 @@ defmodule Golf.Game do
     |> set_timer()
   end
 
-  @spec add_player(t, Player.t) :: {:ok, t} | {:error, term}
+  @spec add_player(t, Player.t) :: {:ok, t} | {:error, String.t}
   def add_player(game, _player)
       when length(game.player_order) >= @max_players do
     {:error, "max players"}
@@ -254,9 +254,7 @@ defmodule Golf.Game do
     {:ok, reset_timer(game)}
   end
 
-  def no_players?(game) do
-    Enum.empty?(game.players)
-  end
+  def no_players?(game), do: Enum.empty?(game.players)
 
   def change_player_name(game, player_id, new_name) do
     update_in(game.players[player_id],

@@ -43,6 +43,7 @@ defmodule GolfWeb.Router do
 
     post "/game/create", GameController, :create_game
     post "/game/leave", GameController, :leave_game
+    post "/game/join", GameController, :join_game
   end
 
   # Other scopes may use custom stacks.
