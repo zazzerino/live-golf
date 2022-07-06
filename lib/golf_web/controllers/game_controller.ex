@@ -14,9 +14,9 @@ defmodule GolfWeb.GameController do
 
     game_id = Golf.gen_game_id()
     player = Game.Player.new(player_id, username)
+    game = Game.new(game_id, player)
 
-    {:ok, _pid} =
-      DynamicSupervisor.start_child(GameSupervisor, {GameServer, {game_id, player}})
+    {:ok, _pid} = DynamicSupervisor.start_child(GameSupervisor, {GameServer, game})
 
     conn
     |> put_session(:game_id, game_id)

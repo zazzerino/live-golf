@@ -28,7 +28,8 @@ defmodule GolfWeb.GameLive do
 
     {:ok, socket}
   end
-
+          # <%= for player <- @game.players do %>
+          # <% end %>
   @impl true
   def render(assigns) do
     ~H"""

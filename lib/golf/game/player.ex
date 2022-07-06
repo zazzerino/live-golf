@@ -1,62 +1,64 @@
 defmodule Golf.Game.Player do
   alias __MODULE__
-  alias Golf.Game.{Card, HandCard}
+  alias Golf.Game.Card
 
   defstruct [:id, :name, :held_card, hand: []]
 
-  @type id :: String.t;
-  @type name :: String.t;
+  @type id :: String.t()
+  @type hand_card :: {Card.t(), face_up :: boolean()}
 
   @type t :: %Player{
           id: id,
-          name: name,
-          held_card: Card.t | nil,
-          hand: [HandCard.t]
+          name: String.t(),
+          held_card: Card.t() | nil,
+          hand: [hand_card]
         }
 
   @hand_size 6
   def hand_size(), do: @hand_size
 
-  @spec new(id, name) :: t
+  @spec new(String.t(), String.t()) :: t
   def new(id, name) do
     %Player{id: id, name: name}
   end
 
-  @spec change_name(t, name) :: t
-  def change_name(player, new_name) do
+  @spec update_name(t, String.t()) :: t
+  def update_name(player, new_name) do
     %Player{player | name: new_name}
   end
 
-  @spec give_cards(t, [Card.t]) :: t
+  @spec give_cards(t, [Card.t()]) :: t
   def give_cards(player, cards) do
-    hand = Enum.map(cards, &HandCard.new/1)
-    %Player{player | hand: hand}
+    %Player{player | hand: Enum.map(cards, fn card -> {card, false} end)}
   end
 
   @spec flip_card(t, integer) :: t
   def flip_card(player, index) do
-    hand = List.update_at(player.hand, index, &HandCard.flip_over/1)
+    hand = List.update_at(player.hand, index, fn {card, _} -> {card, true} end)
     %Player{player | hand: hand}
   end
 
-  @spec hold_card(t, Card.t) :: t
+  @spec hold_card(t, Card.t()) :: t
   def hold_card(player, card) do
     %Player{player | held_card: card}
   end
 
-  @spec discard(t) :: {Card.t, t}
+  @spec discard(t) :: {Card.t(), t}
   def discard(%{held_card: held_card} = player) when is_binary(held_card) do
     player = %Player{player | held_card: nil}
     {held_card, player}
   end
 
-  @spec swap_card(t, integer) :: {Card.t, t}
+  @spec swap_card(t, integer) :: {Card.t(), t}
   def swap_card(%{held_card: held_card} = player, index) when is_binary(held_card) do
-    %{card: card} = Enum.at(player.hand, index)
-    hand = List.replace_at(player.hand, index, HandCard.new(held_card, face_down?: false))
+    {card, _} = Enum.at(player.hand, index)
+    hand = List.replace_at(player.hand, index, fn {card, _} -> {card, true} end)
     player = %Player{player | held_card: nil, hand: hand}
     {card, player}
   end
+
+  defp golf_value({_card, true}), do: :none
+  defp golf_value({card, _face_up}), do: Card.golf_value(card)
 
   defp total_vals(vals, total) do
     case vals do
@@ -118,30 +120,17 @@ defmodule Golf.Game.Player do
 
   @spec score(t) :: integer
   def score(player) do
-    vals = Enum.map(player.hand, &HandCard.golf_value/1)
+    vals = Enum.map(player.hand, &golf_value/1)
     total_vals(vals, 0)
   end
 
-  @spec flipped_card_count(t) :: integer
-  def flipped_card_count(player) do
-    Enum.count(player.hand, fn card -> not card.face_down? end)
+  @spec cards_face_up_count(t) :: integer
+  def cards_face_up_count(player) do
+    Enum.count(player.hand, fn {_, face_up} -> face_up end)
   end
 
-  @spec all_flipped?(t) :: boolean
-  def all_flipped?(player) do
-    flipped_card_count(player) == @hand_size
-  end
-
-  @spec flipped_two?(t) :: boolean
-  def flipped_two?(player) do
-    flipped_card_count(player) == 2
-  end
-
-  defimpl Jason.Encoder, for: Player do
-    def encode(player, opts) do
-      Map.from_struct(player)
-      |> Map.put(:score, Player.score(player))
-      |> Jason.Encode.map(opts)
-    end
+  @spec all_cards_face_up?(t) :: boolean
+  def all_cards_face_up?(player) do
+    cards_face_up_count(player) == @hand_size
   end
 end

@@ -8,11 +8,11 @@ defmodule Golf.Game.Event do
 
   @type t :: %Event{
           action: action,
-          player_id: Player.id,
+          player_id: Player.id(),
           data: %{}
         }
 
-  @spec new(action, Player.id, %{}) :: t
+  @spec new(action, Player.id(), %{}) :: t
   def new(action, player_id, data \\ %{}) do
     %Event{action: action, player_id: player_id, data: data}
   end

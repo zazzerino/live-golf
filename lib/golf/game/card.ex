@@ -1,9 +1,9 @@
 defmodule Golf.Game.Card do
   alias __MODULE__
 
-  @type t :: String.t
+  @type t :: String.t()
 
-  @spec golf_value(Card.t) :: integer
+  @spec golf_value(Card.t()) :: integer
   def golf_value(card) do
     <<rank, _suit>> = card
 

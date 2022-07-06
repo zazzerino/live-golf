@@ -108,15 +108,44 @@ defmodule GolfWeb.Component do
   def hand(assigns) do
     ~H"""
     <g class="hand">
-      <%= for {handcard, index} <- Enum.with_index(@cards) do %>
+      <%= for {{card, face_down}, index} <- Enum.with_index(@cards) do %>
         <.card_image
           class={"hand_#{index}"}
-          card={if handcard.face_down?, do: "2B", else: handcard.card}
+          card={if face_down, do: "2B", else: card}
           x={hand_card_x(index)}
           y={hand_card_y(index)}
         />
       <% end %>
     </g>
     """
+  end
+
+  def hand_coord(position, width, height) do
+    case position do
+      :bottom ->
+        y = height / 2 - card_height() - hand_padding() * 4
+        {0, y, 0}
+
+      :left ->
+        x = -width / 2 + card_height() + hand_padding() * 4
+        {x, 0, 90}
+
+      :top ->
+        y = -height / 2 + card_height() + hand_padding() * 4
+        {0, y, 180}
+
+      :right ->
+        x = width / 2 - card_height() - hand_padding() * 4
+        {x, 0, 270}
+    end
+  end
+
+  def hand_positions(player_count) do
+    case player_count do
+      1 -> [:bottom]
+      2 -> [:bottom, :top]
+      3 -> [:bottom, :left, :right]
+      4 -> [:bottom, :left, :top, :right]
+    end
   end
 end
