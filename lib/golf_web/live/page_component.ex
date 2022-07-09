@@ -31,4 +31,22 @@ defmodule GolfWeb.PageComponent do
   </.form>
   """
   end
+
+  def join_game_form(assigns) do
+    ~H"""
+    <.form
+      let={f}
+      for={@changeset}
+      action={Routes.game_path(@socket, :join_game)}
+      phx-change="validate_game"
+      phx-submit="join_game"
+      phx-trigger-action={@trigger}
+    >
+      <%= label f, :game_id %>
+      <%= text_input f, :game_id, required: true %>
+      <%= error_tag f, :game_id %>
+      <%= submit "Join game" %>
+    </.form>
+    """
+  end
 end

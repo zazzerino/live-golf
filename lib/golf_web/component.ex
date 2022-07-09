@@ -4,7 +4,7 @@ defmodule GolfWeb.Component do
   def footer(assigns) do
     ~H"""
     <footer>
-      <p>Logged in as <%= @username %></p>
+      <p>Logged in as <%= @user_name %></p>
     </footer>
     """
   end

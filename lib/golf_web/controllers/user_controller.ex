@@ -3,25 +3,23 @@ defmodule GolfWeb.UserController do
   alias Golf.GameServer
 
   def update_name(conn, %{"user" => %{"name" => name}}) do
-    %{"session_id" => player_id} = session = get_session(conn)
+    %{"session_id" => user_id} = session = get_session(conn)
 
     if game_id = session["game_id"] do
-      GameServer.update_player_name(game_id, player_id, name)
+      GameServer.update_player_name(game_id, user_id, name)
     end
 
     conn
-    |> put_session(:username, name)
+    |> put_session(:user_name, name)
     |> put_flash(:info, "Name updated.")
     |> redirect(to: "/")
   end
 
   def clear_session(conn, _params) do
-    session = get_session(conn)
-    player_id = session["session_id"]
-    game_id = session["game_id"]
+    %{"session_id" => user_id} = session = get_session(conn)
 
-    if game_id && player_id  do
-      GameServer.remove_player(game_id, player_id)
+    if game_id = session["game_id"] do
+      GameServer.remove_player(game_id, user_id)
     end
 
     conn

@@ -6,7 +6,6 @@ defmodule Golf.User do
   embedded_schema do
     field :name, :string, virtual: true
     field :game_id, :string, virtual: true
-    field :session_id, :string, virtual: true
   end
 
   @default_name "user"

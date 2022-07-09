@@ -9,11 +9,11 @@ defmodule GolfWeb.Router do
     end
   end
 
-  defp put_default_username(conn, _opts) do
-    if get_session(conn, :username) do
+  defp put_default_user_name(conn, _opts) do
+    if get_session(conn, :user_name) do
       conn
     else
-      put_session(conn, :username, Golf.User.default_name())
+      put_session(conn, :user_name, Golf.User.default_name())
     end
   end
 
@@ -25,7 +25,7 @@ defmodule GolfWeb.Router do
     plug :protect_from_forgery
     plug :put_secure_browser_headers
     plug :put_session_id
-    plug :put_default_username
+    plug :put_default_user_name
   end
 
   pipeline :api do

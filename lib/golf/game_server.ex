@@ -39,7 +39,7 @@ defmodule Golf.GameServer do
     GenServer.cast(via_tuple(id), {:remove_player, player_id})
   end
 
-  def handle_event(id, event) when is_binary(id) do
+  def handle_game_event(id, event) when is_binary(id) do
     GenServer.cast(via_tuple(id), {:game_event, event})
   end
 
@@ -75,12 +75,12 @@ defmodule Golf.GameServer do
   @impl true
   def handle_cast({:add_player, player}, {game, timer} = state)
       when length(game.players) < @max_players do
-    if player.id in Game.player_ids(game) do
-      {:noreply, state}
-    else
+    unless player.id in Game.player_ids(game) do
       game = Game.add_player(game, player)
       broadcast_game_state(game)
       {:noreply, {game, reset_timer(timer)}}
+    else
+      {:noreply, state}
     end
   end
 
@@ -101,22 +101,19 @@ defmodule Golf.GameServer do
     end
   end
 
-  # @impl true
-  # def handle_cast({:game_event, event}, game) do
-  #   # {:ok, game} = Game.handle_event(game, event)
-  #   # broadcast_game_state(game)
-  #   {:noreply, game}
-  # end
-
   @impl true
-  def handle_cast({:game_event, event}, {game, timer}) do
-    case Game.handle_event(game, event) do
-      {:ok, game} ->
-        broadcast_game_state(game)
-        {:noreply, game}
+  def handle_cast({:game_event, event}, {game, timer} = state) do
+    if game.state == :flip_two or Game.is_players_turn?(game, event.player_id) do
+      case Game.handle_event(game, event) do
+        {:ok, game} ->
+          broadcast_game_state(game)
+          {:noreply, {game, reset_timer(timer)}}
 
-      _ ->
-
+        _ ->
+          {:noreply, state}
+      end
+    else
+      {:noreply, state}
     end
   end
 

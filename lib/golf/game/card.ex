@@ -1,5 +1,5 @@
 defmodule Golf.Game.Card do
-  @type t :: String.t()
+  @type t :: binary
 
   @spec golf_value(t) :: integer
   def golf_value(card) do
