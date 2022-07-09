@@ -1,5 +1,7 @@
-defmodule GolfWeb.PageLive do
+  defmodule GolfWeb.PageLive do
   use GolfWeb, :live_view
+
+  import GolfWeb.PageComponent
 
   alias Golf.User
 
@@ -12,7 +14,7 @@ defmodule GolfWeb.PageLive do
         game_changeset: User.game_id_changeset(%User{}),
         trigger_submit_name: false,
         trigger_submit_join: false,
-        trigger_submit_forget: false
+        trigger_submit_clear: false
       )
 
     {:ok, socket}
@@ -23,41 +25,38 @@ defmodule GolfWeb.PageLive do
     ~H"""
     <h2>Home</h2>
 
-    <.form let={f}
-           for={@name_changeset}
-           action={Routes.user_path(@socket, :update_name)}
-           phx-change="validate_name"
-           phx-submit="change_name"
-           phx-trigger-action={@trigger_submit_name}
-    >
-      <%= label f, :name %>
-      <%= text_input f, :name, required: true %>
-      <%= error_tag f, :name %>
-      <%= submit "Update name" %>
-    </.form>
+    <.update_name_form
+      socket={@socket}
+      changeset={@name_changeset}
+      trigger={@trigger_submit_name}
+    />
 
-    <.form let={f}
-           for={@game_changeset}
-           action={Routes.game_path(@socket, :join_game)}
-           phx-change="validate_game"
-           phx-submit="join_game"
-           phx-trigger-action={@trigger_submit_join}
-    >
-      <%= label f, :game_id %>
-      <%= text_input f, :game_id, required: true %>
-      <%= error_tag f, :game_id %>
-      <%= submit "Join game" %>
-    </.form>
-
-    <.form for={:forget}
-           action={Routes.user_path(@socket, :forget)}
-           phx-submit="forget"
-           phx-trigger-action={@trigger_submit_forget}
-    >
-      <%= submit "Forget me" %>
-    </.form>
+    <.clear_session_form
+      socket={@socket}
+      trigger={@trigger_submit_clear}
+    />
     """
   end
+
+  # @impl true
+  # def render(assigns) do
+  #   ~H"""
+  #   <h2>Home</h2>
+
+  #   <.form let={f}
+  #          for={@game_changeset}
+  #          action={Routes.game_path(@socket, :join_game)}
+  #          phx-change="validate_game"
+  #          phx-submit="join_game"
+  #          phx-trigger-action={@trigger_submit_join}
+  #   >
+  #     <%= label f, :game_id %>
+  #     <%= text_input f, :game_id, required: true %>
+  #     <%= error_tag f, :game_id %>
+  #     <%= submit "Join game" %>
+  #   </.form>
+  #   """
+  # end
 
   @impl true
   def handle_event("validate_name", %{"user" => attrs}, socket) do
@@ -114,8 +113,8 @@ defmodule GolfWeb.PageLive do
   end
 
   @impl true
-  def handle_event("forget", _params, socket) do
-    {:noreply, assign(socket, trigger_submit_forget: true)}
+  def handle_event("clear_session", _params, socket) do
+    {:noreply, assign(socket, trigger_submit_clear: true)}
   end
 
   @impl true

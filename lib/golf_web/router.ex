@@ -39,7 +39,7 @@ defmodule GolfWeb.Router do
     live "/game", GameLive
 
     post "/user/name", UserController, :update_name
-    post "/user/forget", UserController, :forget
+    post "/user/forget", UserController, :clear_session
 
     post "/game/create", GameController, :create_game
     post "/game/leave", GameController, :leave_game

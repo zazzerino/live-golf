@@ -7,13 +7,9 @@ defmodule Golf.GameServer do
   alias Golf.Game
 
   @max_players 4
-  @inactivity_timeout 1000 * 30 * 1
+  @inactivity_timeout 1000 * 60 * 20
 
   # Client
-
-  def start(game) do
-    GenServer.start(__MODULE__, game, name: via_tuple(game.id))
-  end
 
   def start_link(game) do
     GenServer.start_link(__MODULE__, game, name: via_tuple(game.id))
@@ -57,9 +53,6 @@ defmodule Golf.GameServer do
 
   # Server
 
-  @type timer_ref :: reference()
-  @type state :: {Game.t(), timer_ref()}
-
   @impl true
   def init(game) do
     {:ok, {game, set_timer()}}
@@ -80,19 +73,14 @@ defmodule Golf.GameServer do
   end
 
   @impl true
-  def handle_cast({:start_game, _player_id}, state) do
-    {:noreply, state}
-  end
-
-  @impl true
   def handle_cast({:add_player, player}, {game, timer} = state)
       when length(game.players) < @max_players do
-    unless player.id in Enum.map(game.players, & &1.id) do
+    if player.id in Game.player_ids(game) do
+      {:noreply, state}
+    else
       game = Game.add_player(game, player)
       broadcast_game_state(game)
       {:noreply, {game, reset_timer(timer)}}
-    else
-      {:noreply, state}
     end
   end
 
@@ -101,7 +89,13 @@ defmodule Golf.GameServer do
     if player_id in Game.player_ids(game) do
       game = Game.remove_player(game, player_id)
       broadcast_game_state(game)
-      {:noreply, {game, reset_timer(timer)}}
+
+      if Game.no_players?(game) do
+        Logger.info("Game #{game.id} was ended because all players left")
+        {:stop, :normal, state}
+      else
+        {:noreply, {game, reset_timer(timer)}}
+      end
     else
       {:noreply, state}
     end
@@ -113,6 +107,18 @@ defmodule Golf.GameServer do
   #   # broadcast_game_state(game)
   #   {:noreply, game}
   # end
+
+  @impl true
+  def handle_cast({:game_event, event}, {game, timer}) do
+    case Game.handle_event(game, event) do
+      {:ok, game} ->
+        broadcast_game_state(game)
+        {:noreply, game}
+
+      _ ->
+
+    end
+  end
 
   @impl true
   def handle_cast({:update_player_name, player_id, new_name}, {game, timer}) do
@@ -128,10 +134,6 @@ defmodule Golf.GameServer do
     {:stop, :normal, state}
   end
 
-  defp broadcast_game_state(game) do
-    PubSub.broadcast(Golf.PubSub, "game:#{game.id}", {:game_state, game})
-  end
-
   defp set_timer() do
     Process.send_after(self(), :inactivity_timeout, @inactivity_timeout)
   end
@@ -144,21 +146,8 @@ defmodule Golf.GameServer do
     cancel_timer(timer)
     set_timer()
   end
+
+  defp broadcast_game_state(game) do
+    PubSub.broadcast(Golf.PubSub, "game:#{game.id}", {:game_state, game})
+  end
 end
-
-# defp set_timer(game) do
-#   %Game{game | timer: Process.send_after(self(), :inactivity_timeout, @inactivity_timeout)}
-# end
-
-# defp cancel_timer(%Game{timer: timer} = game) when is_reference(timer) do
-#   Process.cancel_timer(timer)
-#   %Game{game | timer: nil}
-# end
-
-# defp cancel_timer(game), do: game
-
-# defp reset_timer(game) do
-#   game
-#   |> cancel_timer()
-#   |> set_timer()
-# end

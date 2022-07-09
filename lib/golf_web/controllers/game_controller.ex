@@ -2,6 +2,7 @@ defmodule GolfWeb.GameController do
   use GolfWeb, :controller
 
   alias Golf.Game
+  alias Golf.Game.Player
   alias Golf.GameServer
   alias Golf.GameSupervisor
 
@@ -13,7 +14,7 @@ defmodule GolfWeb.GameController do
     end
 
     game_id = Golf.gen_game_id()
-    player = Game.Player.new(player_id, username)
+    player = Player.new(player_id, username)
     game = Game.new(game_id, player)
 
     {:ok, _pid} = DynamicSupervisor.start_child(GameSupervisor, {GameServer, game})
@@ -43,7 +44,7 @@ defmodule GolfWeb.GameController do
 
       [{pid, _}] ->
         %{"session_id" => player_id, "username" => username} = get_session(conn)
-        player = Game.Player.new(player_id, username)
+        player = Player.new(player_id, username)
         GameServer.add_player(pid, player)
 
         conn

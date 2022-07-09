@@ -111,46 +111,21 @@ defmodule Golf.Game do
     Enum.empty?(game.players)
   end
 
-  # def handle_event(%{state: :flip_two} = game, %{action: :flip_card} = event) do
-    # %{ply}
-  # end
+  def handle_event(%{state: :flip_two} = game, %{action: :flip_card} = event) do
+    %{player_id: player_id, data: %{index: index}} = event
+    player = game.players[player_id]
+
+    if Player.cards_facing_up(player) < 2 do
+      game = update_player(game, player.id, &Player.flip_card(&1, index))
+      all_ready? = Enum.all?(game.players, &Player.two_facing_up?/1)
+      state = if all_ready?, do: :take, else: :flip_two
+      events = [event | game.events]
+      {:ok, %Game{game | state: state, events: events}}
+    else
+      {:error, "Player #{player_id} already flipped two"}
+    end
+  end
 end
-
-# @spec handle_event(t, Event.t) :: {:ok, t}
-# def handle_event(%{state: :flip_two} = game, %{action: :flip_card} = event) do
-#   %{player_id: player_id, data: %{hand_index: hand_index}} = event
-
-#   if Player.flipped_two?(game.players[player_id]) do
-#     {:ok, game}
-#   else
-#     players = Map.update!(game.players, player_id, &Player.flip_card(&1, hand_index))
-#     all_flipped_two? = Enum.all?(Map.values(players), &Player.flipped_two?/1)
-#     state = if all_flipped_two?, do: :take, else: game.state
-#     events = [event | game.events]
-
-#     game = %Game{game | state: state, players: players, events: events}
-#     {:ok, reset_timer(game)}
-#   end
-# end
-
-# def handle_event(%{state: :flip} = game, %{action: :flip_card} = event) do
-#   %{player_id: player_id, data: %{hand_index: hand_index}} = event
-#   events = [event | game.events]
-#   players = Map.update!(game.players, event.player_id, &Player.flip_card(&1, hand_index))
-#   next_player_id = next_item(game.player_order, player_id)
-#   {state, final_turn?} = check_game_over(player_id, players, game.final_turn?)
-
-#   game = %Game{
-#     game
-#     | state: state,
-#       players: players,
-#       next_player_id: next_player_id,
-#       final_turn?: final_turn?,
-#       events: events
-#   }
-
-#   {:ok, reset_timer(game)}
-# end
 
 # def handle_event(%{final_turn?: true} = game, %{action: :flip} = event) do
 #   %{player_id: player_id, data: %{hand_index: hand_index}} = event

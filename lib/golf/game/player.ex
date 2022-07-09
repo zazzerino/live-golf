@@ -5,7 +5,7 @@ defmodule Golf.Game.Player do
   defstruct [:id, :name, :held_card, hand: []]
 
   @type id :: String.t()
-  @type hand_card :: {Card.t(), face_up :: boolean()}
+  @type hand_card :: {Card.t(), face_up? :: boolean()}
 
   @type t :: %Player{
           id: id,
@@ -29,12 +29,12 @@ defmodule Golf.Game.Player do
 
   @spec give_cards(t, [Card.t()]) :: t
   def give_cards(player, cards) do
-    %Player{player | hand: Enum.map(cards, fn card -> {card, false} end)}
+    %Player{player | hand: Enum.map(cards, fn card -> {card, true} end)}
   end
 
   @spec flip_card(t, integer) :: t
   def flip_card(player, index) do
-    hand = List.update_at(player.hand, index, fn {card, _} -> {card, true} end)
+    hand = List.update_at(player.hand, index, fn {card, _} -> {card, false} end)
     %Player{player | hand: hand}
   end
 
@@ -58,7 +58,7 @@ defmodule Golf.Game.Player do
   end
 
   defp golf_value({_card, true}), do: :none
-  defp golf_value({card, _face_up}), do: Card.golf_value(card)
+  defp golf_value({card, _face_up?}), do: Card.golf_value(card)
 
   defp total_vals(vals, total) do
     case vals do
@@ -124,13 +124,17 @@ defmodule Golf.Game.Player do
     total_vals(vals, 0)
   end
 
-  @spec cards_face_up_count(t) :: integer
-  def cards_face_up_count(player) do
-    Enum.count(player.hand, fn {_, face_up} -> face_up end)
+  @spec cards_facing_up(t) :: integer
+  def cards_facing_up(player) do
+    Enum.count(player.hand, fn {_, face_up?} -> face_up? end)
   end
 
-  @spec all_cards_face_up?(t) :: boolean
-  def all_cards_face_up?(player) do
-    cards_face_up_count(player) == @hand_size
+  @spec all_cards_facing_up?(t) :: boolean
+  def all_cards_facing_up?(player) do
+    cards_facing_up(player) == @hand_size
+  end
+
+  def two_facing_up?(player) do
+    cards_facing_up(player) == 2
   end
 end
