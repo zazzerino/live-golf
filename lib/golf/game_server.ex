@@ -7,7 +7,7 @@ defmodule Golf.GameServer do
   alias Golf.Game
 
   @max_players 4
-  @inactivity_timeout 1000 * 60 * 20
+  @inactivity_timeout 1000 * 60 * 30
 
   # Client
 
@@ -65,8 +65,7 @@ defmodule Golf.GameServer do
 
   @impl true
   def handle_cast({:start_game, player_id}, {game, timer})
-      when player_id == game.host_id and
-             game.state == :not_started do
+      when player_id == game.host_id and game.state == :not_started do
     game = Game.start(game)
     broadcast_game_state(game)
     {:noreply, {game, reset_timer(timer)}}

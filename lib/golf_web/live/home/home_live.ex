@@ -1,7 +1,7 @@
-  defmodule GolfWeb.PageLive do
+  defmodule GolfWeb.HomeLive do
   use GolfWeb, :live_view
 
-  import GolfWeb.PageComponent
+  import GolfWeb.HomeComponent
   alias Golf.User
 
   @impl true

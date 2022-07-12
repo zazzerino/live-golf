@@ -47,16 +47,6 @@ defmodule Golf.Game do
     %Game{game | players: game.players ++ [player]}
   end
 
-  defp next_index(index, len), do: rem(index + 1, len)
-
-  defp next_player_index(game) do
-    next_index(game.current_player_index, length(game.players))
-  end
-
-  defp reject_matching_id(maps, id) do
-    Enum.reject(maps, fn m -> m.id == id end)
-  end
-
   @spec remove_player(t, Player.id()) :: t
   def remove_player(game, player_id) when game.host_id == player_id do
     next_player = Enum.at(game.players, next_player_index(game))
@@ -77,10 +67,6 @@ defmodule Golf.Game do
     {:ok, card, deck} = Deck.deal(game.deck)
     table_cards = [card | game.table_cards]
     %Game{game | deck: deck, table_cards: table_cards}
-  end
-
-  defp update_matching_id(maps, id, fun) do
-    Enum.map(maps, fn m -> if m.id == id, do: fun.(m), else: m end)
   end
 
   defp deal_hands(game, player_ids) do
@@ -120,26 +106,21 @@ defmodule Golf.Game do
     Enum.empty?(game.players)
   end
 
-  @spec find_player(t, Player.id()) :: Player.t() | nil
-  def find_player(game, player_id) do
-    Enum.find(game.players, fn p -> p.id == player_id end)
-  end
-
-  @spec find_player_index(t, Player.id()) :: non_neg_integer | nil
-  def find_player_index(game, player_id) do
-    Enum.find_index(game.players, fn p -> p.id == player_id end)
+  @spec get_player(t, Player.id()) :: Player.t() | nil
+  def get_player(game, player_id) do
+    Enum.find(game.players, &(&1.id == player_id))
   end
 
   @spec is_players_turn?(t, Player.id()) :: boolean
   def is_players_turn?(game, player_id) do
-    game.current_player_index ==
-      find_player_index(game, player_id)
+    player_index = Enum.find_index(game.players, &(&1.id == player_id))
+    player_index == game.current_player_index
   end
 
   @spec handle_event(t, any) :: {:ok, t} | {:error, binary}
   def handle_event(%{state: :flip_two} = game, %{action: :flip} = event) do
     %{player_id: player_id, data: %{index: index}} = event
-    player = find_player(game, player_id)
+    player = get_player(game, player_id)
 
     if Player.cards_face_up(player) < 2 do
       players = update_matching_id(game.players, player.id, &Player.flip_card(&1, index))
@@ -153,12 +134,37 @@ defmodule Golf.Game do
     end
   end
 
+  def handle_event(%{state: :flip} = game, %{action: :flip} = event) do
+    %{player_id: player_id, data: %{index: index}} = event
+
+    player =
+      get_player(game, player_id)
+      |> Player.flip_card(index)
+
+    players = replace_matching_id(game.players, player)
+
+    all_face_up? = Enum.all?(players, &Player.all_cards_face_up?/1)
+    state = if all_face_up?, do: :game_over, else: :take
+
+    player_face_up? = Player.all_cards_face_up?(player)
+    final_turn? = if player_face_up?, do: true, else: game.final_turn?
+
+    game = %Game{
+      game
+      | state: state,
+        players: players,
+        current_player_index: next_player_index(game),
+        final_turn?: final_turn?
+    }
+
+    {:ok, game}
+  end
+
   def handle_event(%{state: :take} = game, %{action: :take_from_deck} = event) do
     {:ok, card, deck} = Deck.deal(game.deck)
     players = update_matching_id(game.players, event.player_id, &Player.hold_card(&1, card))
-    state = :discard_or_swap
     events = [event | game.events]
-    game = %Game{game | state: state, deck: deck, players: players, events: events}
+    game = %Game{game | state: :discard_or_swap, deck: deck, players: players, events: events}
     {:ok, game}
   end
 
@@ -179,13 +185,13 @@ defmodule Golf.Game do
   end
 
   def handle_event(%{state: :discard_or_swap} = game, %{action: :discard} = event) do
-    player = find_player(game, event.player_id)
-    card = player.held_card
+    player = get_player(game, event.player_id)
+    {card, player} = Player.discard(player)
     table_cards = [card | game.table_cards]
-    players = update_matching_id(game.players, player.id, &Player.discard/1)
+    players = replace_matching_id(game.players, player)
     events = [event | game.events]
 
-    {state, current_player_index} =
+    {state, player_index} =
       if Player.one_face_down?(player) do
         {:take, next_player_index(game)}
       else
@@ -197,76 +203,58 @@ defmodule Golf.Game do
       | state: state,
         players: players,
         table_cards: table_cards,
-        current_player_index: current_player_index,
+        current_player_index: player_index,
         events: events
     }
 
     {:ok, game}
   end
+
+  def handle_event(%{state: :discard_or_swap} = game, %{action: :swap} = event) do
+    %{player_id: player_id, data: %{index: index}} = event
+    player = get_player(game, player_id)
+    {card, player} = Player.swap_card(player, index)
+    table_cards = [card | game.table_cards]
+    players = replace_matching_id(game.players, player)
+    events = [event | game.events]
+
+    all_face_up? = Enum.all?(players, &Player.all_cards_face_up?/1)
+    state = if all_face_up?, do: :game_over, else: :take
+
+    player_face_up? = Player.all_cards_face_up?(player)
+    final_turn? = if player_face_up?, do: true, else: game.final_turn?
+
+    game = %Game{
+      game
+      | state: state,
+        players: players,
+        table_cards: table_cards,
+        current_player_index: next_player_index(game),
+        final_turn?: final_turn?,
+        events: events
+    }
+
+    {:ok, game}
+  end
+
+  defp next_index(index, len), do: rem(index + 1, len)
+
+  defp next_player_index(game) do
+    next_index(game.current_player_index, length(game.players))
+  end
+
+  defp reject_matching_id(maps, id) do
+    Enum.reject(maps, fn m -> m.id == id end)
+  end
+
+  defp update_matching_id(maps, id, fun) do
+    Enum.map(maps, fn m -> if m.id == id, do: fun.(m), else: m end)
+  end
+
+  defp replace_matching_id(maps, map) do
+    Enum.map(maps, fn m -> if m.id == map.id, do: map, else: m end)
+  end
 end
-
-# def handle_event(%{state: :discard} = game, %{action: :discard} = event) do
-#   player = game.players[event.player_id]
-#   {card, player} = Player.discard(player)
-#   players = Map.replace!(game.players, event.player_id, player)
-
-#   table_cards = [card | game.table_cards]
-#   events = [event | game.events]
-
-#   {state, next_player_id} =
-#     if Player.flipped_card_count(player) === Player.hand_size() - 1 do
-#       {:take, next_item(game.player_order, event.player_id)}
-#     else
-#       {:flip, game.next_player_id}
-#     end
-
-#   game = %Game{
-#     game
-#     | state: state,
-#       players: players,
-#       table_cards: table_cards,
-#       next_player_id: next_player_id,
-#       events: events
-#   }
-
-#   {:ok, reset_timer(game)}
-# end
-
-# def handle_event(%{state: :discard} = game, %{action: :swap_card} = event) do
-#   %{player_id: player_id, data: %{hand_index: hand_index}} = event
-
-#   player = game.players[player_id]
-#   {card, player} = Player.swap_card(player, hand_index)
-#   players = Map.replace!(game.players, player_id, player)
-
-#   table_cards = [card | game.table_cards]
-#   next_player_id = next_item(game.player_order, player_id)
-
-#   {state, final_turn?} = check_game_over(player_id, players, game.final_turn?)
-#   events = [event | game.events]
-
-#   game = %Game{
-#     game
-#     | state: state,
-#       players: players,
-#       table_cards: table_cards,
-#       next_player_id: next_player_id,
-#       final_turn?: final_turn?,
-#       events: events
-#   }
-
-#   {:ok, reset_timer(game)}
-# end
-
-# defp check_game_over(player_id, players, final_turn?) do
-#   all_flipped? = Enum.all?(Map.values(players), &Player.all_flipped?/1)
-#   state = if all_flipped?, do: :over, else: :take
-
-#   player_flipped? = Player.all_flipped?(players[player_id])
-#   final_turn? = if player_flipped?, do: true, else: final_turn?
-
-#   {state, final_turn?}
-# end
 
 # def handle_event(%{final_turn?: true} = game, %{action: :flip} = event) do
 #   %{player_id: player_id, data: %{hand_index: hand_index}} = event

@@ -1,4 +1,4 @@
-defmodule GolfWeb.PageComponent do
+defmodule GolfWeb.HomeComponent do
   use GolfWeb, :component
 
   def update_name_form(assigns) do

@@ -12,7 +12,7 @@ defmodule GolfWeb.UserController do
     conn
     |> put_session(:user_name, name)
     |> put_flash(:info, "Name updated.")
-    |> redirect(to: "/")
+    |> redirect(to: Routes.live_path(conn, GolfWeb.HomeLive))
   end
 
   def clear_session(conn, _params) do
@@ -25,6 +25,6 @@ defmodule GolfWeb.UserController do
     conn
     |> clear_session()
     |> configure_session(renew: true)
-    |> redirect(to: "/")
+    |> redirect(to: Routes.live_path(conn, GolfWeb.HomeLive))
   end
 end

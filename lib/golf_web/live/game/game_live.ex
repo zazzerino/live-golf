@@ -46,7 +46,6 @@ defmodule GolfWeb.GameLive do
   def render(assigns) do
     ~H"""
     <.game_title game={@game} />
-    <p><%= @user_id %></p>
 
     <svg
       class="game-svg"
@@ -58,17 +57,19 @@ defmodule GolfWeb.GameLive do
         <.deck state={@game.state} />
 
         <%= unless @game.state == :not_started do %>
-          <.table_card card={hd @game.table_cards} />
+          <%= unless Enum.empty?(@game.table_cards) do %>
+            <.table_card card={hd @game.table_cards} />
+          <% end %>
 
           <%= for {pos, player} <- player_positions(@user_id, @game.players) do %>
             <.hand
-              pos={pos}
+              holder={player.id}
               cards={player.hand}
               coord={hand_coord(pos, @svg_width, @svg_height)}
             />
             <%= if player.held_card do %>
               <.held_card
-                pos={pos}
+                holder={player.id}
                 card_name={player.held_card}
                 coord={held_card_coord(pos, @svg_width, @svg_height)}
               />
@@ -90,8 +91,8 @@ defmodule GolfWeb.GameLive do
           trigger={@trigger_submit_leave}
         />
 
-        <%= if @user_id == @game.host_id and
-               @game.state == :not_started do %>
+        <%= if @game.state == :not_started and
+               @game.host_id == @user_id do %>
           <.start_game_form socket={@socket} />
         <% end %>
       <% end %>
@@ -157,21 +158,32 @@ defmodule GolfWeb.GameLive do
 
   @impl true
   def handle_event("table_card_click", _value, socket) do
-    user_id = socket.assigns[:user_id]
-    IO.puts("#{user_id} clicked the table card")
+    %{user_id: user_id, game: game} = socket.assigns
+
+    if game.state == :take and Game.is_players_turn?(game, user_id) do
+      event = Game.Event.new(:take_from_table, user_id)
+      GameServer.handle_game_event(game.id, event)
+    end
+
     {:noreply, socket}
   end
 
   @impl true
   def handle_event("hand_click", value, socket) do
     %{user_id: user_id, game: game} = socket.assigns
-    %{"pos" => pos, "index" => index} = value
+    %{"holder" => holder, "index" => index} = value
     index = String.to_integer(index)
 
-    if pos == "bottom" and game.state == :flip_two do
-      event = Game.Event.new(:flip, user_id, %{index: index})
-      IO.inspect(event, label: "EVENT")
-      GameServer.handle_game_event(game.id, event)
+    if holder == user_id do
+      if game.state == :flip_two or game.state == :flip do
+        event = Game.Event.new(:flip, user_id, %{index: index})
+        GameServer.handle_game_event(game.id, event)
+      else
+        if game.state == :discard_or_swap do
+          event = Game.Event.new(:swap, user_id, %{index: index})
+          GameServer.handle_game_event(game.id, event)
+        end
+      end
     end
 
     {:noreply, socket}
@@ -180,8 +192,9 @@ defmodule GolfWeb.GameLive do
   @impl true
   def handle_event("held_card_click", value, socket) do
     %{user_id: user_id, game: game} = socket.assigns
+    %{"holder" => holder} = value
 
-    if value["pos"] == "bottom" and game.state == :discard_or_swap do
+    if holder == user_id and game.state == :discard_or_swap do
       event = Game.Event.new(:discard, user_id)
       GameServer.handle_game_event(game.id, event)
     end

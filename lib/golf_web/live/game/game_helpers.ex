@@ -11,12 +11,12 @@ defmodule GolfWeb.GameHelpers do
   @card_width_scale "12%"
   def card_width_scale, do: @card_width_scale
 
+  @hand_padding 2
+  def hand_padding, do: @hand_padding
+
   def deck_offset_started, do: -card_width() / 2 - 2
 
   def table_card_offset, do: card_width() / 2 + 2
-
-  @hand_padding 2
-  def hand_padding, do: @hand_padding
 
   def hand_card_x(index) do
     x_offset = rem(index, 3)
@@ -61,8 +61,8 @@ defmodule GolfWeb.GameHelpers do
 
   @spec player_positions(User.id(), [Player.t()]) :: [{Player.t(), pos}]
   def player_positions(user_id, players) do
-    user_index = Enum.find_index(players, fn p -> p.id == user_id end)
     positions = hand_positions(length(players))
+    user_index = Enum.find_index(players, &(&1.id == user_id))
     players = Golf.rotate(players, user_index)
     Enum.zip(positions, players)
   end

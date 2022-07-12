@@ -40,18 +40,20 @@ defmodule GolfWeb.GameComponent do
   def start_game_form(assigns) do
     ~H"""
     <.form for={:start_game}>
-      <button type="button" phx-click="start_game">Start game</button>
+      <button type="button" phx-click="start_game">
+        Start game
+      </button>
     </.form>
     """
   end
 
   def card_image(assigns) do
-    extra = assigns_to_attributes(assigns, [:class, :card_name, :x, :y])
+    extra = assigns_to_attributes(assigns, [:class, :card_name, :x, :y, :highlight?])
     assigns = assign(assigns, :extra, extra)
 
     ~H"""
     <image
-      class={"card #{@class}"}
+      class={"card #{@class} #{if assigns[:highlight?], do: "highlight"}"}
       href={"/images/cards/#{@card_name}.svg"}
       x={@x - card_width() / 2}
       y={@y - card_height() / 2}
@@ -85,19 +87,17 @@ defmodule GolfWeb.GameComponent do
     """
   end
 
-          # card_name={if face_up?, do: card, else: "2B"}
   def hand(assigns) do
-    IO.inspect(assigns.pos)
     ~H"""
     <g class="hand" transform={"translate(#{@coord.x}, #{@coord.y}), rotate(#{@coord.rotate})"}>
-      <%= for {{card, _face_up?}, index} <- Enum.with_index(@cards) do %>
+      <%= for {{card, face_up?}, index} <- Enum.with_index(@cards) do %>
         <.card_image
           class={"hand_#{index}"}
-          card_name={card}
+          card_name={if face_up?, do: card, else: "2B"}
           x={hand_card_x(index)}
           y={hand_card_y(index)}
-          phx-value-pos={@pos}
           phx-value-index={index}
+          phx-value-holder={@holder}
           phx-click="hand_click"
         />
       <% end %>
@@ -113,7 +113,7 @@ defmodule GolfWeb.GameComponent do
       x={@coord.x}
       y={@coord.y}
       transform={"rotate(#{@coord.rotate})"}
-      phx-value-pos={@pos}
+      phx-value-holder={@holder}
       phx-click="held_card_click"
     />
     """

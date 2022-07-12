@@ -15,7 +15,7 @@ defmodule GolfWeb.Component do
       <nav>
         <ul>
           <li>
-            <%= live_patch "home", to: Routes.live_path(@conn, GolfWeb.PageLive) %>
+            <%= live_patch "home", to: Routes.live_path(@conn, GolfWeb.HomeLive) %>
           </li>
           <li>
             <%= live_patch "game", to: Routes.live_path(@conn, GolfWeb.GameLive) %>

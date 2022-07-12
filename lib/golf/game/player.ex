@@ -44,9 +44,11 @@ defmodule Golf.Game.Player do
     %Player{player | held_card: card}
   end
 
-  @spec discard(t) :: t
-  def discard(player) do
-    %Player{player | held_card: nil}
+  @spec discard(t) :: {Card.t(), t}
+  def discard(player) when is_binary(player.held_card) do
+    card = player.held_card
+    player = %Player{player | held_card: nil}
+    {card, player}
   end
 
   @spec swap_card(t, integer) :: {Card.t(), t}

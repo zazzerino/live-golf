@@ -28,14 +28,10 @@ defmodule GolfWeb.Router do
     plug :put_default_user_name
   end
 
-  pipeline :api do
-    plug :accepts, ["json"]
-  end
-
   scope "/", GolfWeb do
     pipe_through :browser
 
-    live "/", PageLive
+    live "/", HomeLive
     live "/game", GameLive
 
     post "/user/name", UserController, :update_name
@@ -46,7 +42,10 @@ defmodule GolfWeb.Router do
     post "/game/join", GameController, :join_game
   end
 
-  # Other scopes may use custom stacks.
+  # pipeline :api do
+  #   plug :accepts, ["json"]
+  # end
+
   # scope "/api", GolfWeb do
   #   pipe_through :api
   # end
