@@ -49,7 +49,6 @@ defmodule GolfWeb.GameController do
 
         conn
         |> put_session(:game_id, game_id)
-        |> put_flash(:info, "Game joined.")
         |> redirect(to: "/game")
     end
   end

@@ -89,7 +89,7 @@ defmodule Golf.GameServer do
       game = Game.remove_player(game, player_id)
       broadcast_game_state(game)
 
-      if Game.no_players?(game) do
+      if Enum.empty?(game.players) do
         Logger.info("Game #{game.id} was ended because all players left")
         {:stop, :normal, state}
       else

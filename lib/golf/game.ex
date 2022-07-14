@@ -237,6 +237,45 @@ defmodule Golf.Game do
     {:ok, game}
   end
 
+  def playable_cards(%{state: :flip_two} = game, player_id) do
+    player = get_player(game, player_id)
+
+    if Player.two_face_up?(player) do
+      []
+    else
+      cards =
+        for {{_card, face_up?}, index} <- Enum.with_index(player.hand) do
+          unless face_up?, do: "hand#{index}"
+        end
+
+      Enum.reject(cards, &is_nil(&1))
+    end
+  end
+
+  def playable_cards(game, player_id) do
+    if is_players_turn?(game, player_id) do
+      playable_card_positions(game.state)
+    else
+      []
+    end
+  end
+
+  defp playable_card_positions(state) do
+    case state do
+      s when s in [:flip_two, :flip] ->
+        ["hand0", "hand1", "hand2", "hand3", "hand4", "hand5"]
+
+      :take ->
+        ["deck", "table"]
+
+      :discard_or_swap ->
+        ["held", "hand0", "hand1", "hand2", "hand3", "hand4", "hand5"]
+
+      _ ->
+        []
+    end
+  end
+
   defp next_index(index, len), do: rem(index + 1, len)
 
   defp next_player_index(game) do

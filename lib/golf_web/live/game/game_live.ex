@@ -25,11 +25,12 @@ defmodule GolfWeb.GameLive do
         user_id: session["session_id"],
         user_name: session["user_name"],
         game: nil,
-        trigger_submit_create: false,
-        trigger_submit_leave: false,
+        playable_cards: nil,
         svg_width: @svg_width,
         svg_height: @svg_height,
-        svg_viewbox: @svg_viewbox
+        svg_viewbox: @svg_viewbox,
+        trigger_submit_create: false,
+        trigger_submit_leave: false
       )
 
     game_id = session["game_id"]
@@ -54,24 +55,33 @@ defmodule GolfWeb.GameLive do
       viewbox={@svg_viewbox}
     >
       <%= if @game do %>
-        <.deck state={@game.state} />
+        <.deck
+          state={@game.state}
+          highlight={"deck" in @playable_cards}
+        />
 
         <%= unless @game.state == :not_started do %>
           <%= unless Enum.empty?(@game.table_cards) do %>
-            <.table_card card={hd @game.table_cards} />
+            <.table_card
+              card={hd @game.table_cards}
+              highlight={"table" in @playable_cards}
+            />
           <% end %>
 
           <%= for {pos, player} <- player_positions(@user_id, @game.players) do %>
             <.hand
+              user_id={@user_id}
               holder={player.id}
               cards={player.hand}
               coord={hand_coord(pos, @svg_width, @svg_height)}
+              playable_cards={@playable_cards}
             />
             <%= if player.held_card do %>
               <.held_card
                 holder={player.id}
                 card_name={player.held_card}
                 coord={held_card_coord(pos, @svg_width, @svg_height)}
+                highlight={"held" in @playable_cards}
               />
             <% end %>
           <% end %>
@@ -92,7 +102,7 @@ defmodule GolfWeb.GameLive do
         />
 
         <%= if @game.state == :not_started and
-               @game.host_id == @user_id do %>
+                 @game.host_id == @user_id do %>
           <.start_game_form socket={@socket} />
         <% end %>
       <% end %>
@@ -108,13 +118,27 @@ defmodule GolfWeb.GameLive do
 
       [{pid, _}] ->
         {:ok, game} = GameServer.fetch_state(pid)
-        {:noreply, assign(socket, :game, game)}
+        user_id = socket.assigns[:user_id]
+
+        socket =
+          socket
+          |> assign(:game, game)
+          |> assign(:playable_cards, Game.playable_cards(game, user_id))
+
+        {:noreply, socket}
     end
   end
 
   @impl true
   def handle_info({:game_state, game}, socket) do
-    {:noreply, assign(socket, game: game)}
+    user_id = socket.assigns[:user_id]
+
+    socket =
+      socket
+      |> assign(:game, game)
+      |> assign(:playable_cards, Game.playable_cards(game, user_id))
+
+    {:noreply, socket}
   end
 
   @impl true
@@ -157,7 +181,7 @@ defmodule GolfWeb.GameLive do
   end
 
   @impl true
-  def handle_event("table_card_click", _value, socket) do
+  def handle_event("table_click", _value, socket) do
     %{user_id: user_id, game: game} = socket.assigns
 
     if game.state == :take and Game.is_players_turn?(game, user_id) do
@@ -190,7 +214,7 @@ defmodule GolfWeb.GameLive do
   end
 
   @impl true
-  def handle_event("held_card_click", value, socket) do
+  def handle_event("held_click", value, socket) do
     %{user_id: user_id, game: game} = socket.assigns
     %{"holder" => holder} = value
 
