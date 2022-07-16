@@ -6,7 +6,7 @@ defmodule GolfWeb.GameComponent do
   def game_title(assigns) do
     ~H"""
     <h2>
-      Game <%= if @game, do: @game.id %>
+      Game <%= @game_id %>
     </h2>
     """
   end
@@ -17,6 +17,8 @@ defmodule GolfWeb.GameComponent do
 
     assigns =
       assigns
+      |> assign(:x, assigns.x - card_width() / 2) # adjust x so the image is centered
+      |> assign(:y, assigns.y - card_height() / 2) # adjust y so the image is centered
       |> assign(:class, class)
       |> assign(:extra, extra)
 
@@ -24,8 +26,8 @@ defmodule GolfWeb.GameComponent do
     <image
       class={@class}
       href={"/images/cards/#{@name}.svg"}
-      x={@x - card_width() / 2}
-      y={@y - card_height() / 2}
+      x={@x}
+      y={@y}
       width={card_width_scale()}
       {@extra}
     />
@@ -37,7 +39,7 @@ defmodule GolfWeb.GameComponent do
     <.card_image
       class="deck"
       name="2B"
-      x={if @state == :not_started, do: 0, else: deck_offset_started()}
+      x={if assigns.state == :not_started, do: 0, else: deck_offset_started()}
       y={0}
       highlight={@highlight}
       phx-click="deck_click"
@@ -58,27 +60,27 @@ defmodule GolfWeb.GameComponent do
     """
   end
 
-  def hand_card_playable?(user_id, holder, state, playable_cards, index, face_up?) do
-    if state == :flip_two and not face_up? do
-      true
-    else
-      name = "hand#{index}"
-      user_id == holder and name in playable_cards
-    end
+  defp highlight_hand_card?(user_id, holder, playable_cards, index) do
+    card = String.to_existing_atom("hand_#{index}")
+    user_id == holder and card in playable_cards
   end
 
   def hand(assigns) do
     ~H"""
-    <g class="hand" transform={"translate(#{@coord.x}, #{@coord.y}), rotate(#{@coord.rotate})"}>
+    <g
+      class="hand"
+      transform={"translate(#{@coord.x}, #{@coord.y}), rotate(#{@coord.rotate})"}
+    >
       <%= for {{card, face_up?}, index} <- Enum.with_index(@cards) do %>
         <.card_image
-          class={"hand#{index}"}
+          class={"hand_#{index}"}
           name={if face_up?, do: card, else: "2B"}
           x={hand_card_x(index)}
           y={hand_card_y(index)}
-          highlight={if @holder == @user_id, do: "hand#{index}" in @playable_cards}
+          highlight={highlight_hand_card?(@user_id, @holder, @playable_cards, index)}
           phx-value-index={index}
           phx-value-holder={@holder}
+          phx-value-face-up={if face_up?, do: "true", else: "false"}
           phx-click="hand_click"
         />
       <% end %>
@@ -95,7 +97,6 @@ defmodule GolfWeb.GameComponent do
       y={@coord.y}
       transform={"rotate(#{@coord.rotate})"}
       highlight={@highlight}
-      phx-value-holder={@holder}
       phx-click="held_click"
     />
     """

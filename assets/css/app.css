@@ -139,7 +139,6 @@ header nav a {
 
 .game-controls {
   display: flex;
-  /* width: 500px; */
 }
 
 .game-controls form {
@@ -154,4 +153,18 @@ header nav a {
 footer p {
   margin-top: 1rem;
   text-align: center;
+}
+
+@keyframes float-deck-from-top {
+  from {
+    transform: translateY(-300px);
+  }
+  to {
+    transform: translateY(0px);
+  }
+}
+
+.deck {
+  animation-name: float-deck-from-top;
+  animation-duration: 1s;
 }

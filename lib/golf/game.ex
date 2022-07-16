@@ -243,12 +243,23 @@ defmodule Golf.Game do
     if Player.two_face_up?(player) do
       []
     else
-      cards =
-        for {{_card, face_up?}, index} <- Enum.with_index(player.hand) do
-          unless face_up?, do: "hand#{index}"
-        end
+      player.hand
+      |> Enum.with_index()
+      |> Enum.reject(fn {{_, face_up?}, _} -> face_up? end)
+      |> Enum.map(fn {_, index} -> String.to_existing_atom("hand_#{index}") end)
+    end
+  end
 
-      Enum.reject(cards, &is_nil(&1))
+  def playable_cards(%{state: :flip} = game, player_id) do
+    if is_players_turn?(game, player_id) do
+      player = get_player(game, player_id)
+
+      player.hand
+      |> Enum.with_index()
+      |> Enum.reject(fn {{_, face_up?}, _} -> face_up? end)
+      |> Enum.map(fn {_, index} -> String.to_existing_atom("hand_#{index}") end)
+    else
+      []
     end
   end
 
@@ -262,14 +273,14 @@ defmodule Golf.Game do
 
   defp playable_card_positions(state) do
     case state do
-      s when s in [:flip_two, :flip] ->
-        ["hand0", "hand1", "hand2", "hand3", "hand4", "hand5"]
+      s when s in [:flip, :flip_two] ->
+        [:hand_0, :hand_1, :hand_2, :hand_3, :hand_4, :hand_5]
 
       :take ->
-        ["deck", "table"]
+        [:deck, :table]
 
       :discard_or_swap ->
-        ["held", "hand0", "hand1", "hand2", "hand3", "hand4", "hand5"]
+        [:held, :hand_0, :hand_1, :hand_2, :hand_3, :hand_4, :hand_5]
 
       _ ->
         []
