@@ -3,6 +3,8 @@ defmodule GolfWeb.GameComponent do
 
   import GolfWeb.GameHelpers
 
+  alias Phoenix.LiveView.JS
+
   def game_title(assigns) do
     ~H"""
     <h2>
@@ -30,20 +32,25 @@ defmodule GolfWeb.GameComponent do
       y={@y}
       width={card_width_scale()}
       {@extra}
-    />
+    >
+      <%= if assigns[:inner_block], do: render_slot(@inner_block) %>
+    </image>
     """
   end
 
+      # class={"deck #{if @not_started, do: "float"}"}
   def deck(assigns) do
     ~H"""
     <.card_image
       class="deck"
       name="2B"
-      x={if assigns.state == :not_started, do: 0, else: deck_offset_started()}
+      x={if @not_started, do: 0, else: deck_offset_started()}
       y={0}
       highlight={@highlight}
       phx-click="deck_click"
-    />
+    >
+      <animate attributeName="y" values={"-342"} dur="1s" />
+    </.card_image>
     """
   end
 
@@ -80,7 +87,7 @@ defmodule GolfWeb.GameComponent do
           highlight={highlight_hand_card?(@user_id, @holder, @playable_cards, index)}
           phx-value-index={index}
           phx-value-holder={@holder}
-          phx-value-face-up={if face_up?, do: "true", else: "false"}
+          phx-value-face-up={face_up?}
           phx-click="hand_click"
         />
       <% end %>

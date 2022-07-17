@@ -8,7 +8,7 @@
 >
   <%= if @game do %>
     <.deck
-      state={@game_state}
+      not_started={@game_state == :not_started}
       highlight={:deck in @playable_cards}
     />
 

@@ -139,32 +139,32 @@ header nav a {
 
 .game-controls {
   display: flex;
+  margin-top: 1rem;
+  width: 500px;
 }
 
 .game-controls form {
-  margin: 0;
   margin-right: 1rem;
+  margin-bottom: 1rem;
 }
 
 .game-controls form button {
-  margin: auto;
+  margin: 0;
 }
 
 footer p {
-  margin-top: 1rem;
-  text-align: center;
+  margin-top: 0.5rem;
+  margin-left: 2rem;
+  /* text-align: center; */
 }
 
 @keyframes float-deck-from-top {
   from {
-    transform: translateY(-300px);
-  }
-  to {
-    transform: translateY(0px);
+    transform: translateY(-300px) rotate(90deg);
   }
 }
 
-.deck {
+.deck.float {
   animation-name: float-deck-from-top;
   animation-duration: 1s;
 }

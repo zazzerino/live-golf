@@ -237,27 +237,27 @@ defmodule Golf.Game do
     {:ok, game}
   end
 
+  defp playable_hand_cards(hand) do
+    hand
+    |> Enum.with_index()
+    |> Enum.reject(fn {{_card, face_up?}, _index} -> face_up? end)
+    |> Enum.map(fn {_, index} -> String.to_existing_atom("hand_#{index}") end)
+  end
+
   def playable_cards(%{state: :flip_two} = game, player_id) do
     player = get_player(game, player_id)
 
     if Player.two_face_up?(player) do
       []
     else
-      player.hand
-      |> Enum.with_index()
-      |> Enum.reject(fn {{_, face_up?}, _} -> face_up? end)
-      |> Enum.map(fn {_, index} -> String.to_existing_atom("hand_#{index}") end)
+      playable_hand_cards(player.hand)
     end
   end
 
   def playable_cards(%{state: :flip} = game, player_id) do
     if is_players_turn?(game, player_id) do
       player = get_player(game, player_id)
-
-      player.hand
-      |> Enum.with_index()
-      |> Enum.reject(fn {{_, face_up?}, _} -> face_up? end)
-      |> Enum.map(fn {_, index} -> String.to_existing_atom("hand_#{index}") end)
+      playable_hand_cards(player.hand)
     else
       []
     end

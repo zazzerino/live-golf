@@ -5,6 +5,8 @@ defmodule GolfWeb.GameLive do
   import GolfWeb.GameComponent
 
   alias Phoenix.PubSub
+  alias Phoenix.LiveView.JS
+
   alias Golf.Game
   alias Golf.GameServer
 
@@ -128,11 +130,9 @@ defmodule GolfWeb.GameLive do
   def handle_event("hand_click", value, socket) do
     %{user_id: user_id, game: game, playable_cards: playable_cards} = socket.assigns
     %{"holder" => holder, "index" => index} = value
-    face_up? = value["face_up"] == "true"
     index = String.to_integer(index)
     card = String.to_existing_atom("hand_#{index}")
-
-    IO.inspect(value, label: "VALUE")
+    face_up? = Map.has_key?(value, "face_up")
 
     if holder == user_id and card in playable_cards do
       if game.state == :discard_or_swap and not face_up? do
@@ -142,9 +142,6 @@ defmodule GolfWeb.GameLive do
         event = Game.Event.new(:flip, user_id, %{index: index})
         GameServer.handle_game_event(game.id, event)
       end
-      # action = if game.state == :discard_or_swap, do: :swap, else: :flip
-      # event = Game.Event.new(action, user_id, %{index: index})
-      # GameServer.handle_game_event(game.id, event)
     end
 
     {:noreply, socket}
