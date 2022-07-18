@@ -5,18 +5,9 @@ defmodule GolfWeb.GameLive do
   import GolfWeb.GameComponent
 
   alias Phoenix.PubSub
-  alias Phoenix.LiveView.JS
 
   alias Golf.Game
   alias Golf.GameServer
-
-  @svg_width 500
-  @svg_height 600
-
-  @svg_viewbox "#{@svg_width / -2},
-                #{@svg_height / -2},
-                #{@svg_width},
-                #{@svg_height}"
 
   @impl true
   def mount(_params, session, socket) do
@@ -26,15 +17,18 @@ defmodule GolfWeb.GameLive do
       assign(socket,
         user_id: session["session_id"],
         user_name: session["user_name"],
-        svg_width: @svg_width,
-        svg_height: @svg_height,
-        svg_viewbox: @svg_viewbox,
+        svg_width: svg_width(),
+        svg_height: svg_height(),
+        svg_viewbox: svg_viewbox(),
         trigger_submit_create: false,
         trigger_submit_leave: false,
         game: nil,
         game_id: nil,
         game_state: nil,
-        playable_cards: nil
+        table_card: nil,
+        not_started: nil,
+        playable_cards: nil,
+        player_positions: nil
       )
 
     if connected?(socket) and is_binary(game_id) do
@@ -47,12 +41,17 @@ defmodule GolfWeb.GameLive do
 
   defp assign_game_info(socket, game) do
     user_id = socket.assigns[:user_id]
+    playable_cards = Game.playable_cards(game, user_id)
+    player_positions = player_positions(user_id, game.players)
+    table_card = unless Enum.empty?(game.table_cards), do: hd game.table_cards
 
     socket
     |> assign(:game, game)
     |> assign(:game_id, game.id)
-    |> assign(:game_state, game.state)
-    |> assign(:playable_cards, Game.playable_cards(game, user_id))
+    |> assign(:table_card, table_card)
+    |> assign(:playable_cards, playable_cards)
+    |> assign(:player_positions, player_positions)
+    |> assign(:not_started, game.state == :not_started)
   end
 
   @impl true
@@ -80,7 +79,7 @@ defmodule GolfWeb.GameLive do
       socket
       |> assign(game: nil)
       |> assign(game_id: nil)
-      |> put_flash(:error, "Game inactive.")
+      # |> put_flash(:error, "Game inactive.")
 
     {:noreply, socket}
   end
@@ -132,10 +131,10 @@ defmodule GolfWeb.GameLive do
     %{"holder" => holder, "index" => index} = value
     index = String.to_integer(index)
     card = String.to_existing_atom("hand_#{index}")
-    face_up? = Map.has_key?(value, "face_up")
+    face_up = Map.has_key?(value, "face_up")
 
     if holder == user_id and card in playable_cards do
-      if game.state == :discard_or_swap and not face_up? do
+      if game.state == :discard_or_swap and not face_up do
         event = Game.Event.new(:swap, user_id, %{index: index})
         GameServer.handle_game_event(game.id, event)
       else

@@ -6,21 +6,21 @@
   height={@svg_height}
   viewbox={@svg_viewbox}
 >
-  <%= if @game do %>
+  <%= if @game_id do %>
     <.deck
-      not_started={@game_state == :not_started}
+      not_started={@not_started}
       highlight={:deck in @playable_cards}
     />
 
-    <%= unless @game_state == :not_started do %>
-      <%= unless Enum.empty?(@game.table_cards) do %>
+    <%= unless @not_started do %>
+      <%= if @table_card do %>
         <.table_card
-          card={hd @game.table_cards}
+          card={@table_card}
           highlight={:table in @playable_cards}
         />
       <% end %>
 
-      <%= for {pos, player} <- player_positions(@user_id, @game.players) do %>
+      <%= for {pos, player} <- @player_positions do %>
         <.hand
           user_id={@user_id}
           holder={player.id}
@@ -53,7 +53,7 @@
       trigger={@trigger_submit_leave}
     />
 
-    <%= if @game.state == :not_started and
+    <%= if @not_started and
            @game.host_id == @user_id do %>
       <.start_game_form socket={@socket} />
     <% end %>

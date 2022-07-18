@@ -3,8 +3,6 @@ defmodule GolfWeb.GameComponent do
 
   import GolfWeb.GameHelpers
 
-  alias Phoenix.LiveView.JS
-
   def game_title(assigns) do
     ~H"""
     <h2>
@@ -14,15 +12,11 @@ defmodule GolfWeb.GameComponent do
   end
 
   def card_image(assigns) do
-    extra = assigns_to_attributes(assigns, [:class, :card_name, :x, :y, :highlight])
+    x = assigns[:x] || card_width() / 2
+    y = assigns[:y] || -card_height() / 2
     class = "card #{assigns[:class]} #{if assigns[:highlight], do: "highlight"}"
-
-    assigns =
-      assigns
-      |> assign(:x, assigns.x - card_width() / 2) # adjust x so the image is centered
-      |> assign(:y, assigns.y - card_height() / 2) # adjust y so the image is centered
-      |> assign(:class, class)
-      |> assign(:extra, extra)
+    extra = assigns_to_attributes(assigns, [:class, :card_name, :x, :y, :highlight])
+    assigns = assign(assigns, x: x, y: y, class: class, extra: extra)
 
     ~H"""
     <image
@@ -32,37 +26,55 @@ defmodule GolfWeb.GameComponent do
       y={@y}
       width={card_width_scale()}
       {@extra}
-    >
-      <%= if assigns[:inner_block], do: render_slot(@inner_block) %>
-    </image>
+    />
     """
   end
 
-      # class={"deck #{if @not_started, do: "float"}"}
   def deck(assigns) do
+    x = if assigns.not_started, do: -card_width() / 2, else: deck_offset_started()
+    y = -card_height() / 2
+    class = "deck #{if assigns.not_started, do: "deal"}"
+    assigns = assign(assigns, x: x, y: y, class: class)
+
     ~H"""
     <.card_image
-      class="deck"
+      class={@class}
       name="2B"
-      x={if @not_started, do: 0, else: deck_offset_started()}
-      y={0}
+      x={@x}
+      y={@y}
       highlight={@highlight}
       phx-click="deck_click"
-    >
-      <animate attributeName="y" values={"-342"} dur="1s" />
-    </.card_image>
+    />
     """
   end
 
   def table_card(assigns) do
+    assigns = assign(assigns, x: 2, y: -card_height() / 2)
+
     ~H"""
     <.card_image
       class="table"
       name={@card}
-      x={table_card_offset()}
-      y={0}
+      x={@x}
+      y={@y}
       highlight={@highlight}
       phx-click="table_click"
+    />
+    """
+  end
+
+  def hand_card(assigns) do
+    ~H"""
+    <.card_image
+     class={"hand_#{@index}"}
+     name={if @face_up, do: @card, else: "2B"}
+     x={@coord.x}
+     y={@coord.y}
+     highlight={@highlight}
+     phx-value-index={@index}
+     phx-value-holder={@holder}
+     phx-value-face-up={@face_up}
+     phx-click="hand_click"
     />
     """
   end
@@ -78,17 +90,14 @@ defmodule GolfWeb.GameComponent do
       class="hand"
       transform={"translate(#{@coord.x}, #{@coord.y}), rotate(#{@coord.rotate})"}
     >
-      <%= for {{card, face_up?}, index} <- Enum.with_index(@cards) do %>
-        <.card_image
-          class={"hand_#{index}"}
-          name={if face_up?, do: card, else: "2B"}
-          x={hand_card_x(index)}
-          y={hand_card_y(index)}
+      <%= for {{card, face_up}, index} <- Enum.with_index(@cards) do %>
+        <.hand_card
+          card={card}
+          index={index}
+          holder={@holder}
+          face_up={face_up}
+          coord={hand_card_coord(index)}
           highlight={highlight_hand_card?(@user_id, @holder, @playable_cards, index)}
-          phx-value-index={index}
-          phx-value-holder={@holder}
-          phx-value-face-up={face_up?}
-          phx-click="hand_click"
         />
       <% end %>
     </g>
@@ -100,9 +109,7 @@ defmodule GolfWeb.GameComponent do
     <.card_image
       class="held"
       name={@card_name}
-      x={@coord.x}
-      y={@coord.y}
-      transform={"rotate(#{@coord.rotate})"}
+      transform={"translate(#{@coord.x}, #{@coord.y}) rotate(#{@coord.rotate})"}
       highlight={@highlight}
       phx-click="held_click"
     />

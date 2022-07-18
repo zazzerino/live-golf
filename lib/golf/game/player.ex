@@ -5,7 +5,7 @@ defmodule Golf.Game.Player do
   defstruct [:id, :name, :held_card, hand: []]
 
   @type id :: binary
-  @type hand_card :: {Card.t(), face_up? :: boolean}
+  @type hand_card :: {Card.t(), face_up :: boolean}
 
   @type t :: %Player{
           id: id,
@@ -60,7 +60,7 @@ defmodule Golf.Game.Player do
   end
 
   defp golf_value({_card, false}), do: :none
-  defp golf_value({card, _face_up?}), do: Card.golf_value(card)
+  defp golf_value({card, _face_up}), do: Card.golf_value(card)
 
   defp total_vals(vals, total) do
     case vals do
@@ -99,12 +99,12 @@ defmodule Golf.Game.Player do
        d, e, c] when is_integer(c) ->
         total_vals([a, b, d, e], total)
 
-      # left col match, 4 cards
+      # left col match, 2nd pass
       [a, b,
        a, c] when is_integer(a) ->
         total_vals([b, c], total)
 
-      # right col match, 4 cards
+      # right col match, 2nd pass
       [a, b,
        c, b] when is_integer(b) ->
         total_vals([a, c], total)
@@ -128,7 +128,7 @@ defmodule Golf.Game.Player do
 
   @spec cards_face_up(t) :: integer
   def cards_face_up(player) do
-    Enum.count(player.hand, fn {_, face_up?} -> face_up? end)
+    Enum.count(player.hand, fn {_, face_up} -> face_up end)
   end
 
   @spec all_cards_face_up?(t) :: boolean

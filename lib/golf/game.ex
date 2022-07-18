@@ -287,7 +287,7 @@ defmodule Golf.Game do
     end
   end
 
-  defp next_index(index, len), do: rem(index + 1, len)
+  defp next_index(index, length), do: rem(index + 1, length)
 
   defp next_player_index(game) do
     next_index(game.current_player_index, length(game.players))
@@ -301,8 +301,8 @@ defmodule Golf.Game do
     Enum.map(maps, fn m -> if m.id == id, do: fun.(m), else: m end)
   end
 
-  defp replace_matching_id(maps, map) do
-    Enum.map(maps, fn m -> if m.id == map.id, do: map, else: m end)
+  defp replace_matching_id(maps, %{id: id} = map) do
+    Enum.map(maps, fn m -> if m.id == id, do: map, else: m end)
   end
 end
 
