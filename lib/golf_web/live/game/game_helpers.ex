@@ -9,9 +9,9 @@ defmodule GolfWeb.GameHelpers do
   def svg_height, do: @svg_height
 
   @svg_viewbox "#{@svg_width / -2}, " <>
-               "#{@svg_height / -2}, " <>
-               "#{@svg_width}, " <>
-               "#{@svg_height}"
+                 "#{@svg_height / -2}, " <>
+                 "#{@svg_width}, " <>
+                 "#{@svg_height}"
 
   def svg_viewbox, do: @svg_viewbox
 
@@ -27,6 +27,8 @@ defmodule GolfWeb.GameHelpers do
   @hand_padding 2
   def hand_padding, do: @hand_padding
 
+  def deck_offset, do: -@card_width / 2
+
   def deck_offset_started, do: -@card_width - 2
 
   def table_card_offset, do: @card_width + 2
@@ -34,14 +36,14 @@ defmodule GolfWeb.GameHelpers do
   def hand_card_coord(index) do
     x =
       case index do
-        i when i in [0, 3] -> -@card_width
-        i when i in [2, 5] -> @card_width
-        _ -> 0
+        i when i in [0, 3] -> -@card_width * 1.5
+        i when i in [1, 4] -> -@card_width / 2
+        i when i in [2, 5] -> @card_width / 2
       end
 
     y =
       case index do
-        i when i in 0..2 -> @card_height
+        i when i in 0..2 -> -@card_height
         _ -> 0
       end
 
@@ -52,23 +54,23 @@ defmodule GolfWeb.GameHelpers do
   def hand_coord(pos, width, height) do
     case pos do
       :bottom ->
-        x = -@card_width / 2
-        y = height / 2 - @card_height * 2
+        x = 0
+        y = height / 2 - @card_height
         %{x: x, y: y, rotate: 0}
 
       :left ->
-        x = -width / 2 + @card_height * 2
-        y = -@card_width / 2
+        x = -width / 2 + @card_height
+        y = 0
         %{x: x, y: y, rotate: 90}
 
       :top ->
-        x = @card_width / 2
-        y = -height / 2 + @card_height * 2
+        x = 0
+        y = -height / 2 + @card_height
         %{x: x, y: y, rotate: 180}
 
       :right ->
-        x = width / 2 - @card_height * 2
-        y = @card_width / 2
+        x = width / 2 - @card_height
+        y = 0
         %{x: x, y: y, rotate: 270}
     end
   end
@@ -76,7 +78,7 @@ defmodule GolfWeb.GameHelpers do
   @spec hand_positions(1..4) :: [pos, ...]
   def hand_positions(player_count) do
     case player_count do
-      1 -> [:right]
+      1 -> [:bottom]
       2 -> [:bottom, :top]
       3 -> [:bottom, :left, :right]
       4 -> [:bottom, :left, :top, :right]
@@ -88,37 +90,27 @@ defmodule GolfWeb.GameHelpers do
     case pos do
       :bottom ->
         hand_coord(pos, width, height)
-
-      # x = card_width() + hand_padding() * 2
-      # y = height / 2 - card_height() * 1.5 - hand_padding() * 4
-      # %{x: x, y: y, rotate: 0}
+        |> Map.update!(:x, &(&1 + card_width() * 1.5))
 
       :left ->
-        x = -width / 2 + card_height() + hand_padding() * 4
-        y = card_width() * 1.5 + hand_padding() * 4
-        %{x: x, y: y, rotate: 90}
+        hand_coord(pos, width, height)
+        |> Map.update!(:y, &(&1 + card_width() * 1.5))
 
       :top ->
-        # x = -card_width() * 1.5
-        # y = -height / 2 + card_height() + hand_padding() * 4
-        x = -card_width() * 2 - hand_padding() * 2
-        y = -height / 2
-        %{x: x, y: y, rotate: 0}
+        hand_coord(pos, width, height)
+        |> Map.update!(:x, &(&1 - card_width() * 1.5))
 
       :right ->
-        x = width / 2 - card_height() - hand_padding() * 4
-        y = -card_width() * 1.5 - hand_padding() * 4
-        %{x: x, y: y, rotate: 90}
+        hand_coord(pos, width, height)
+        |> Map.update!(:y, &(&1 - card_width() * 1.5))
     end
   end
 
-  @spec player_positions(User.id(), [Player.t()]) :: [{Player.t(), pos}]
-  def player_positions(user_id, players) do
+  @spec player_positions(Player.id(), [Player.t()]) :: [{Player.t(), pos}]
+  def player_positions(player_id, players) do
     positions = hand_positions(length(players))
-
-    user_index = Enum.find_index(players, &(&1.id == user_id))
-    players = Golf.rotate(players, user_index)
-
+    player_index = Enum.find_index(players, &(&1.id == player_id))
+    players = Golf.rotate(players, player_index)
     Enum.zip(positions, players)
   end
 end

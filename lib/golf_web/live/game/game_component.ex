@@ -12,7 +12,7 @@ defmodule GolfWeb.GameComponent do
   end
 
   def card_image(assigns) do
-    x = assigns[:x] || card_width() / 2
+    x = assigns[:x] || -card_width() / 2
     y = assigns[:y] || -card_height() / 2
     class = "card #{assigns[:class]} #{if assigns[:highlight], do: "highlight"}"
     extra = assigns_to_attributes(assigns, [:class, :card_name, :x, :y, :highlight])
@@ -31,7 +31,7 @@ defmodule GolfWeb.GameComponent do
   end
 
   def deck(assigns) do
-    x = if assigns.not_started, do: -card_width() / 2, else: deck_offset_started()
+    x = if assigns.not_started, do: deck_offset(), else: deck_offset_started()
     y = -card_height() / 2
     class = "deck #{if assigns.not_started, do: "deal"}"
     assigns = assign(assigns, x: x, y: y, class: class)
@@ -109,8 +109,8 @@ defmodule GolfWeb.GameComponent do
     <.card_image
       class="held"
       name={@card_name}
-      transform={"translate(#{@coord.x}, #{@coord.y}) rotate(#{@coord.rotate})"}
       highlight={@highlight}
+      transform={"translate(#{@coord.x}, #{@coord.y}) rotate(#{@coord.rotate})"}
       phx-click="held_click"
     />
     """

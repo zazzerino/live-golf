@@ -79,7 +79,6 @@ defmodule GolfWeb.GameLive do
       socket
       |> assign(game: nil)
       |> assign(game_id: nil)
-      # |> put_flash(:error, "Game inactive.")
 
     {:noreply, socket}
   end

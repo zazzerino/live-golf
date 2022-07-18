@@ -5,6 +5,10 @@
   --game-height: 600px;
   --card-width: 60px;
   --card-height: 84px;
+  --deck-x: calc(var(--card-width) / -2 - 2px);
+  --deck-y: 0vh;
+  /* --deck-x: 0vw; */
+  /* --deck-y: calc(var(--card-height) / 2); */
 }
 
 .game-svg {
@@ -45,14 +49,25 @@ footer p {
   /* text-align: center; */
 }
 
-@keyframes deal-deck {
+@keyframes deal-deck-from-top {
   from {
-    transform: translateY(calc(var(--game-height) / -2))
-               rotate(90deg);
+    transform: translateY(-50vh) rotate(90deg);
   }
 }
 
 .deck.deal {
-  animation-name: deal-deck;
+  animation-name: deal-deck-from-top;
   animation-duration: 1s;
 }
+
+@keyframes deal-from-deck-to-bottom {
+  from {
+    transform: translate(var(--deck-x), var(--deck-y))
+  }
+}
+
+/* .held { */
+/*   /\* transform: translate(var(--deck-x), var(--deck-y)); *\/ */
+/*   animation-name: deal-from-deck-to-bottom; */
+/*   animation-duration: 2s; */
+/* } */
