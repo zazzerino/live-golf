@@ -30,9 +30,9 @@
         />
         <%= if player.held_card do %>
           <.held_card
+            pos={pos}
             holder={player.id}
             card_name={player.held_card}
-            coord={held_card_coord(pos, @svg_width, @svg_height)}
             highlight={:held in @playable_cards}
           />
         <% end %>

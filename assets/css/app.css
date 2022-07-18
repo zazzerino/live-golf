@@ -3,30 +3,38 @@
 :root {
   --game-width: 500px;
   --game-height: 600px;
+
   --card-width: 60px;
   --card-height: 84px;
+
   --deck-x: calc(var(--card-width) / -2 - 2px);
   --deck-y: 0vh;
-  /* --deck-x: 0vw; */
-  /* --deck-y: calc(var(--card-height) / 2); */
-}
 
-.game-svg {
-  background-color: seagreen;
-}
+  --held-card-bottom-x: calc(var(--card-width) * 1.5);
+  --held-card-bottom-y: calc(var(--card-height) * 2.5);
 
-.card {
-  transform-box: fill-box;
-  transform-origin: center;
-}
+  --held-card-left-x: calc(var(--card-height) * -2);
+  --held-card-left-y: calc(var(--card-width) * 1.5);
 
-.card.highlight {
-  filter: drop-shadow(0 0 0.3rem rgba(173, 255, 47, 1.0));
-  cursor: pointer;
+  --held-card-top-x: calc(var(--card-width) * -1.5);
+  --held-card-top-y: calc(var(--card-height) * -2.5);
+
+  --held-card-right-x: calc(var(--card-height) * 2);
+  --held-card-right-y: calc(var(--card-width) * -1.5);
 }
 
 header nav a {
   display: inline;
+}
+
+footer p {
+  margin-top: 0.5rem;
+  margin-left: 2rem;
+  /* text-align: center; */
+}
+
+.game-svg {
+  background-color: seagreen;
 }
 
 .game-controls {
@@ -43,30 +51,61 @@ header nav a {
   margin: 0;
 }
 
-footer p {
-  margin-top: 0.5rem;
-  margin-left: 2rem;
-  /* text-align: center; */
+.card {
+  transform-box: fill-box;
+  transform-origin: center;
 }
 
-@keyframes deal-deck-from-top {
+.card.highlight {
+  filter: drop-shadow(0 0 0.3rem rgba(173, 255, 47, 1.0));
+  cursor: pointer;
+}
+
+@keyframes slide-deck-from-top {
   from {
     transform: translateY(-50vh) rotate(90deg);
   }
 }
 
-.deck.deal {
-  animation-name: deal-deck-from-top;
+.card.deck.slide {
+  animation-name: slide-deck-from-top;
   animation-duration: 1s;
 }
 
-@keyframes deal-from-deck-to-bottom {
+@keyframes deal-from-deck {
   from {
     transform: translate(var(--deck-x), var(--deck-y))
   }
 }
 
-/* .held { */
+.card.held {
+  animation-name: deal-from-deck;
+  animation-duration: 1s;
+}
+
+.card.held.bottom {
+  transform: translate(var(--held-card-bottom-x),
+                       var(--held-card-bottom-y));
+}
+
+.card.held.left {
+  transform: translate(var(--held-card-left-x),
+                       var(--held-card-left-y))
+             rotate(90deg);
+}
+
+.card.held.top {
+  transform: translate(var(--held-card-top-x),
+                       var(--held-card-top-y));
+}
+
+.card.held.right {
+  transform: translate(var(--held-card-right-x),
+                       var(--held-card-right-y))
+              rotate(90deg);
+}
+
+/* .card.held { */
 /*   /\* transform: translate(var(--deck-x), var(--deck-y)); *\/ */
 /*   animation-name: deal-from-deck-to-bottom; */
 /*   animation-duration: 2s; */

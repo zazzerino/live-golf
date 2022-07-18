@@ -85,26 +85,26 @@ defmodule GolfWeb.GameHelpers do
     end
   end
 
-  @spec held_card_coord(pos, number, number) :: coord
-  def held_card_coord(pos, width, height) do
-    case pos do
-      :bottom ->
-        hand_coord(pos, width, height)
-        |> Map.update!(:x, &(&1 + card_width() * 1.5))
+  # @spec held_card_coord(pos, number, number) :: coord
+  # def held_card_coord(pos, width, height) do
+  #   case pos do
+  #     :bottom ->
+  #       hand_coord(pos, width, height)
+  #       |> Map.update!(:x, &(&1 + card_width() * 1.5))
 
-      :left ->
-        hand_coord(pos, width, height)
-        |> Map.update!(:y, &(&1 + card_width() * 1.5))
+  #     :left ->
+  #       hand_coord(pos, width, height)
+  #       |> Map.update!(:y, &(&1 + card_width() * 1.5))
 
-      :top ->
-        hand_coord(pos, width, height)
-        |> Map.update!(:x, &(&1 - card_width() * 1.5))
+  #     :top ->
+  #       hand_coord(pos, width, height)
+  #       |> Map.update!(:x, &(&1 - card_width() * 1.5))
 
-      :right ->
-        hand_coord(pos, width, height)
-        |> Map.update!(:y, &(&1 - card_width() * 1.5))
-    end
-  end
+  #     :right ->
+  #       hand_coord(pos, width, height)
+  #       |> Map.update!(:y, &(&1 - card_width() * 1.5))
+  #   end
+  # end
 
   @spec player_positions(Player.id(), [Player.t()]) :: [{Player.t(), pos}]
   def player_positions(player_id, players) do

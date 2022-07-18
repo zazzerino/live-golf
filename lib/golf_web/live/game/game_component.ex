@@ -33,7 +33,7 @@ defmodule GolfWeb.GameComponent do
   def deck(assigns) do
     x = if assigns.not_started, do: deck_offset(), else: deck_offset_started()
     y = -card_height() / 2
-    class = "deck #{if assigns.not_started, do: "deal"}"
+    class = "deck #{if assigns.not_started, do: "slide"}"
     assigns = assign(assigns, x: x, y: y, class: class)
 
     ~H"""
@@ -107,15 +107,15 @@ defmodule GolfWeb.GameComponent do
   def held_card(assigns) do
     ~H"""
     <.card_image
-      class="held"
+      class={"held #{@pos}"}
       name={@card_name}
       highlight={@highlight}
-      transform={"translate(#{@coord.x}, #{@coord.y}) rotate(#{@coord.rotate})"}
       phx-click="held_click"
     />
     """
   end
 
+      # transform={"translate(#{@coord.x}, #{@coord.y}) rotate(#{@coord.rotate})"}
   def create_game_form(assigns) do
     ~H"""
     <.form
