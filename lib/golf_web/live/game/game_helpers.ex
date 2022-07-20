@@ -24,54 +24,18 @@ defmodule GolfWeb.GameHelpers do
   @card_width_scale "12%"
   def card_width_scale, do: @card_width_scale
 
-  @hand_padding 2
-  def hand_padding, do: @hand_padding
-
-  def deck_offset, do: -@card_width / 2
-
-  def deck_offset_started, do: -@card_width - 2
-
-  def table_card_offset, do: @card_width + 2
-
-  def hand_card_coord(index) do
-    x =
-      case index do
-        i when i in [0, 3] -> -@card_width * 1.5
-        i when i in [1, 4] -> -@card_width / 2
-        i when i in [2, 5] -> @card_width / 2
-      end
-
-    y =
-      case index do
-        i when i in 0..2 -> -@card_height
-        _ -> 0
-      end
-
-    %{x: x, y: y}
+  def hand_card_x(index) do
+    case index do
+      i when i in [0, 3] -> -@card_width * 1.5
+      i when i in [1, 4] -> -@card_width / 2
+      i when i in [2, 5] -> @card_width / 2
+    end
   end
 
-  @spec hand_coord(pos, number, number) :: coord
-  def hand_coord(pos, width, height) do
-    case pos do
-      :bottom ->
-        x = 0
-        y = height / 2 - @card_height
-        %{x: x, y: y, rotate: 0}
-
-      :left ->
-        x = -width / 2 + @card_height
-        y = 0
-        %{x: x, y: y, rotate: 90}
-
-      :top ->
-        x = 0
-        y = -height / 2 + @card_height
-        %{x: x, y: y, rotate: 180}
-
-      :right ->
-        x = width / 2 - @card_height
-        y = 0
-        %{x: x, y: y, rotate: 270}
+  def hand_card_y(index) do
+    case index do
+      i when i in 0..2 -> -@card_height
+      _ -> 0
     end
   end
 
@@ -85,32 +49,17 @@ defmodule GolfWeb.GameHelpers do
     end
   end
 
-  # @spec held_card_coord(pos, number, number) :: coord
-  # def held_card_coord(pos, width, height) do
-  #   case pos do
-  #     :bottom ->
-  #       hand_coord(pos, width, height)
-  #       |> Map.update!(:x, &(&1 + card_width() * 1.5))
-
-  #     :left ->
-  #       hand_coord(pos, width, height)
-  #       |> Map.update!(:y, &(&1 + card_width() * 1.5))
-
-  #     :top ->
-  #       hand_coord(pos, width, height)
-  #       |> Map.update!(:x, &(&1 - card_width() * 1.5))
-
-  #     :right ->
-  #       hand_coord(pos, width, height)
-  #       |> Map.update!(:y, &(&1 - card_width() * 1.5))
-  #   end
-  # end
-
   @spec player_positions(Player.id(), [Player.t()]) :: [{Player.t(), pos}]
   def player_positions(player_id, players) do
     positions = hand_positions(length(players))
     player_index = Enum.find_index(players, &(&1.id == player_id))
     players = Golf.rotate(players, player_index)
     Enum.zip(positions, players)
+  end
+
+  @spec highlight_hand_card?(User.id(), Player.id(), [any], number) :: boolean
+  def highlight_hand_card?(user_id, holder, playable_cards, index) do
+    card = String.to_existing_atom("hand_#{index}")
+    user_id == holder and card in playable_cards
   end
 end

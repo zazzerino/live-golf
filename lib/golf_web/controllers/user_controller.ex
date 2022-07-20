@@ -1,5 +1,6 @@
 defmodule GolfWeb.UserController do
   use GolfWeb, :controller
+
   alias Golf.GameServer
 
   def update_name(conn, %{"user" => %{"name" => name}}) do

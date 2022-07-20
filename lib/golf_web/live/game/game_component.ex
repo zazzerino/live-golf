@@ -31,17 +31,13 @@ defmodule GolfWeb.GameComponent do
   end
 
   def deck(assigns) do
-    x = if assigns.not_started, do: deck_offset(), else: deck_offset_started()
-    y = -card_height() / 2
-    class = "deck #{if assigns.not_started, do: "slide"}"
-    assigns = assign(assigns, x: x, y: y, class: class)
+    class = "deck #{if assigns.not_started, do: "not-started"}"
+    assigns = assign(assigns, class: class)
 
     ~H"""
     <.card_image
       class={@class}
       name="2B"
-      x={@x}
-      y={@y}
       highlight={@highlight}
       phx-click="deck_click"
     />
@@ -49,55 +45,30 @@ defmodule GolfWeb.GameComponent do
   end
 
   def table_card(assigns) do
-    assigns = assign(assigns, x: 2, y: -card_height() / 2)
-
     ~H"""
     <.card_image
       class="table"
       name={@card}
-      x={@x}
-      y={@y}
       highlight={@highlight}
       phx-click="table_click"
     />
     """
   end
 
-  def hand_card(assigns) do
-    ~H"""
-    <.card_image
-     class={"hand_#{@index}"}
-     name={if @face_up, do: @card, else: "2B"}
-     x={@coord.x}
-     y={@coord.y}
-     highlight={@highlight}
-     phx-value-index={@index}
-     phx-value-holder={@holder}
-     phx-value-face-up={@face_up}
-     phx-click="hand_click"
-    />
-    """
-  end
-
-  defp highlight_hand_card?(user_id, holder, playable_cards, index) do
-    card = String.to_existing_atom("hand_#{index}")
-    user_id == holder and card in playable_cards
-  end
-
   def hand(assigns) do
     ~H"""
-    <g
-      class="hand"
-      transform={"translate(#{@coord.x}, #{@coord.y}), rotate(#{@coord.rotate})"}
-    >
-      <%= for {{card, face_up}, index} <- Enum.with_index(@cards) do %>
-        <.hand_card
-          card={card}
-          index={index}
-          holder={@holder}
-          face_up={face_up}
-          coord={hand_card_coord(index)}
-          highlight={highlight_hand_card?(@user_id, @holder, @playable_cards, index)}
+    <g class={"hand #{@pos}"}>
+      <%= for {{card, face_up}, index} <- Enum.with_index(@hand_cards) do %>
+        <.card_image
+         class={"hand_#{index}"}
+         name={if face_up, do: card, else: "2B"}
+         x={hand_card_x(index)}
+         y={hand_card_y(index)}
+         highlight={highlight_hand_card?(@user_id, @holder, @playable_cards, index)}
+         phx-value-index={index}
+         phx-value-holder={@holder}
+         phx-value-face-up={face_up}
+         phx-click="hand_click"
         />
       <% end %>
     </g>
@@ -115,7 +86,6 @@ defmodule GolfWeb.GameComponent do
     """
   end
 
-      # transform={"translate(#{@coord.x}, #{@coord.y}) rotate(#{@coord.rotate})"}
   def create_game_form(assigns) do
     ~H"""
     <.form

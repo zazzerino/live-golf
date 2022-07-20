@@ -22,10 +22,10 @@
 
       <%= for {pos, player} <- @player_positions do %>
         <.hand
-          user_id={@user_id}
+          pos={pos}
           holder={player.id}
-          cards={player.hand}
-          coord={hand_coord(pos, @svg_width, @svg_height)}
+          user_id={@user_id}
+          hand_cards={player.hand}
           playable_cards={@playable_cards}
         />
         <%= if player.held_card do %>
@@ -47,14 +47,13 @@
     trigger={@trigger_submit_create}
   />
 
-  <%= if @game do %>
+  <%= if @game_id do %>
     <.leave_game_form
       socket={@socket}
       trigger={@trigger_submit_leave}
     />
 
-    <%= if @not_started and
-           @game.host_id == @user_id do %>
+    <%= if @not_started and @user_is_host do %>
       <.start_game_form socket={@socket} />
     <% end %>
   <% end %>

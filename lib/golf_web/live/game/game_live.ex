@@ -28,7 +28,8 @@ defmodule GolfWeb.GameLive do
         table_card: nil,
         not_started: nil,
         playable_cards: nil,
-        player_positions: nil
+        player_positions: nil,
+        user_is_host: nil
       )
 
     if connected?(socket) and is_binary(game_id) do
@@ -43,7 +44,7 @@ defmodule GolfWeb.GameLive do
     user_id = socket.assigns[:user_id]
     playable_cards = Game.playable_cards(game, user_id)
     player_positions = player_positions(user_id, game.players)
-    table_card = unless Enum.empty?(game.table_cards), do: hd game.table_cards
+    table_card = unless Enum.empty?(game.table_cards), do: hd(game.table_cards)
 
     socket
     |> assign(:game, game)
@@ -51,6 +52,7 @@ defmodule GolfWeb.GameLive do
     |> assign(:table_card, table_card)
     |> assign(:playable_cards, playable_cards)
     |> assign(:player_positions, player_positions)
+    |> assign(:user_is_host, user_id == game.host_id)
     |> assign(:not_started, game.state == :not_started)
   end
 
