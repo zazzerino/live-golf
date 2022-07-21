@@ -9,15 +9,15 @@
   --table-card-x: calc(var(--card-width) / 2);
 
   --hand-bottom-x: 0vw;
-  --hand-bottom-y: calc(50vh - var(--card-height));
+  --hand-bottom-y: calc(50vh - var(--card-height) - 4px);
 
-  --hand-left-x: calc(-50vw + var(--card-width) * 2);
+  --hand-left-x: calc(var(--card-height) * -2 + 4px);
   --hand-left-y: 0vh;
 
   --hand-top-x: 0vw;
-  --hand-top-y: calc(-50vh + var(--card-height));
+  --hand-top-y: calc(-50vh + var(--card-height) + 4px);
 
-  --hand-right-x: calc(50vw - var(--card-width) * 2);
+  --hand-right-x: calc(var(--card-height) * 2 - 4px);
   --hand-right-y: 0vh;
 
   --held-card-bottom-x: calc(var(--hand-bottom-x) + var(--card-width) * 1.5);
@@ -26,15 +26,16 @@
   --held-card-left-x: var(--hand-left-x);
   --held-card-left-y: calc(var(--hand-left-y) + var(--card-width) * 1.5);
 
-  --held-card-top-x: calc(var(--hand-bottom-x) - var(--card-width) * 1.5);
+  --held-card-top-x: calc(var(--hand-top-x) - var(--card-width) * 1.5);
   --held-card-top-y: var(--hand-top-y);
 
   --held-card-right-x: var(--hand-right-x);
   --held-card-right-y: calc(var(--hand-right-y) - var(--card-width) * 1.5);
-
 }
 
 .game-svg {
+  width: var(--game-width);
+  height: var(--game-height);
   background-color: seagreen;
 }
 
@@ -48,7 +49,7 @@
   cursor: pointer;
 }
 
-@keyframes slide-deck-from-top {
+@keyframes slide-from-top {
   from {
     transform: translateY(-50vh)
                rotate(90deg);
@@ -56,7 +57,7 @@
 }
 
 .card.deck.not-started {
-  animation-name: slide-deck-from-top;
+  animation-name: slide-from-top;
   animation-duration: 1s;
   transform: translate(0vw, 0vh);
 }
@@ -69,12 +70,10 @@
   transform: translateX(var(--table-card-x));
 }
 
-@keyframes deal-from-deck {
-  from {
-    transform: translate(var(--deck-x),
-                         var(--deck-y));
-  }
-}
+/* .hand { */
+/*   transform-box: fill-box; */
+/*   transform-origin: center; */
+/* } */
 
 .hand.bottom {
   transform: translate(var(--hand-bottom-x),
@@ -99,8 +98,25 @@
              rotate(270deg);
 }
 
-.card.held {
+@keyframes deal-from-deck {
+  from {
+    transform: translateX(var(--deck-x));
+  }
+}
+
+.card.held.deal-from-deck {
   animation-name: deal-from-deck;
+  animation-duration: 1s;
+}
+
+@keyframes deal-from-table {
+  from {
+    transform: translateX(var(--table-card-x))
+  }
+}
+
+.card.held.deal-from-table {
+  animation-name: deal-from-table;
   animation-duration: 1s;
 }
 
@@ -124,6 +140,14 @@
   transform: translate(var(--held-card-right-x),
                        var(--held-card-right-y))
               rotate(90deg);
+}
+
+header nav ul {
+  display: flex;
+}
+
+header nav ul a {
+  margin-right: 2rem;
 }
 
 /* header nav a { */

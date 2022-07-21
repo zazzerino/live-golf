@@ -1,6 +1,5 @@
 defmodule GolfWeb.GameHelpers do
   @type pos :: :bottom | :left | :top | :right
-  @type coord :: %{x: number, y: number, rotate: number}
 
   @svg_width 500
   def svg_width, do: @svg_width
@@ -23,6 +22,9 @@ defmodule GolfWeb.GameHelpers do
 
   @card_width_scale "12%"
   def card_width_scale, do: @card_width_scale
+
+  def card_center_x, do: -card_width() / 2
+  def card_center_y, do: -card_height() / 2
 
   def hand_card_x(index) do
     case index do
@@ -62,4 +64,4 @@ defmodule GolfWeb.GameHelpers do
     card = String.to_existing_atom("hand_#{index}")
     user_id == holder and card in playable_cards
   end
-end
+ end

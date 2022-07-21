@@ -12,11 +12,13 @@ defmodule GolfWeb.GameComponent do
   end
 
   def card_image(assigns) do
-    x = assigns[:x] || -card_width() / 2
-    y = assigns[:y] || -card_height() / 2
+    x = assigns[:x] || card_center_x()
+    y = assigns[:y] || card_center_y()
+    width = card_width_scale()
+
     class = "card #{assigns[:class]} #{if assigns[:highlight], do: "highlight"}"
     extra = assigns_to_attributes(assigns, [:class, :card_name, :x, :y, :highlight])
-    assigns = assign(assigns, x: x, y: y, class: class, extra: extra)
+    assigns = assign(assigns, x: x, y: y, width: width, class: class, extra: extra)
 
     ~H"""
     <image
@@ -24,7 +26,7 @@ defmodule GolfWeb.GameComponent do
       href={"/images/cards/#{@name}.svg"}
       x={@x}
       y={@y}
-      width={card_width_scale()}
+      width={@width}
       {@extra}
     />
     """
@@ -76,9 +78,24 @@ defmodule GolfWeb.GameComponent do
   end
 
   def held_card(assigns) do
+    action_class =
+      case assigns[:last_action] do
+        :take_from_deck ->
+          "deal-from-deck"
+
+        :take_from_table ->
+          "deal-from-table"
+
+        _ ->
+          nil
+      end
+
+    class = "held #{assigns.pos} #{action_class}"
+    assigns = assign(assigns, class: class)
+
     ~H"""
     <.card_image
-      class={"held #{@pos}"}
+      class={@class}
       name={@card_name}
       highlight={@highlight}
       phx-click="held_click"
