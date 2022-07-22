@@ -1,7 +1,7 @@
 defmodule Golf.Game.Card do
   @type t :: binary
 
-  @spec golf_value(t) :: integer
+  @spec golf_value(t) :: 0..10
   def golf_value(card) do
     <<rank, _suit>> = card
 

@@ -39,11 +39,6 @@
   background-color: seagreen;
 }
 
-/* .card { */
-/*   transform-box: fill-box; */
-/*   transform-origin: center; */
-/* } */
-
 .card.highlight {
   filter: drop-shadow(0 0 0.3rem rgba(173, 255, 47, 1.0));
   cursor: pointer;
@@ -70,11 +65,6 @@
   transform: translateX(var(--table-card-x));
 }
 
-/* .hand { */
-/*   transform-box: fill-box; */
-/*   transform-origin: center; */
-/* } */
-
 .hand.bottom {
   transform: translate(var(--hand-bottom-x),
                        var(--hand-bottom-y));
@@ -98,25 +88,53 @@
              rotate(270deg);
 }
 
-@keyframes deal-from-deck {
+.card.hand_0 {
+  transform: translate(calc(var(--card-width) * -1),
+                       calc(var(--card-height) / -2));
+}
+
+.card.hand_1 {
+  transform: translateY(calc(var(--card-height) / -2));
+}
+
+.card.hand_2 {
+  transform: translate(var(--card-width),
+                       calc(var(--card-height) / -2));
+}
+
+.card.hand_3 {
+  transform: translate(calc(var(--card-width) * -1),
+                       calc(var(--card-height) / 2));
+}
+
+.card.hand_4 {
+  transform: translateY(calc(var(--card-height) / 2));
+}
+
+.card.hand_5 {
+  transform: translate(var(--card-width),
+                       calc(var(--card-height) / 2));
+}
+
+@keyframes slide-from-deck {
   from {
     transform: translateX(var(--deck-x));
   }
 }
 
-.card.held.deal-from-deck {
-  animation-name: deal-from-deck;
+.card.held.slide-from-deck {
+  animation-name: slide-from-deck;
   animation-duration: 1s;
 }
 
-@keyframes deal-from-table {
+@keyframes slide-from-table {
   from {
     transform: translateX(var(--table-card-x))
   }
 }
 
-.card.held.deal-from-table {
-  animation-name: deal-from-table;
+.card.held.slide-from-table {
+  animation-name: slide-from-table;
   animation-duration: 1s;
 }
 
@@ -172,4 +190,14 @@ header nav ul a {
 
 /* .game-controls form button { */
 /*   margin: 0; */
+/* } */
+
+/* .card { */
+/*   transform-box: fill-box; */
+/*   transform-origin: center; */
+/* } */
+
+/* .hand { */
+/*   transform-box: fill-box; */
+/*   transform-origin: center; */
 /* } */

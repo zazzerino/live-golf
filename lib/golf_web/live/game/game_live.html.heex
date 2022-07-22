@@ -1,3 +1,5 @@
+<.game_title game_id={@game_id} />
+
 <svg
   class="game-svg"
   viewbox={@svg_viewbox}
@@ -29,16 +31,14 @@
             pos={pos}
             holder={player.id}
             card_name={player.held_card}
-            highlight={:held in @playable_cards}
             last_action={@last_action}
+            highlight={:held in @playable_cards}
           />
         <% end %>
       <% end %>
     <% end %>
   <% end %>
 </svg>
-
-<.game_title game_id={@game_id} />
 
 <div class="game-controls">
   <.create_game_form

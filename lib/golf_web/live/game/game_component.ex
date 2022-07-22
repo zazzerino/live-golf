@@ -57,19 +57,19 @@ defmodule GolfWeb.GameComponent do
     """
   end
 
+         # x={hand_card_x(index)}
+         # y={hand_card_y(index)}
   def hand(assigns) do
     ~H"""
     <g class={"hand #{@pos}"}>
-      <%= for {{card, face_up}, index} <- Enum.with_index(@hand_cards) do %>
+      <%= for {{card, face_up?}, index} <- Enum.with_index(@hand_cards) do %>
         <.card_image
          class={"hand_#{index}"}
-         name={if face_up, do: card, else: "2B"}
-         x={hand_card_x(index)}
-         y={hand_card_y(index)}
+         name={if face_up?, do: card, else: "2B"}
          highlight={highlight_hand_card?(@user_id, @holder, @playable_cards, index)}
          phx-value-index={index}
          phx-value-holder={@holder}
-         phx-value-face-up={face_up}
+         phx-value-face-up={face_up?}
          phx-click="hand_click"
         />
       <% end %>
@@ -78,19 +78,14 @@ defmodule GolfWeb.GameComponent do
   end
 
   def held_card(assigns) do
-    action_class =
+    animation =
       case assigns[:last_action] do
-        :take_from_deck ->
-          "deal-from-deck"
-
-        :take_from_table ->
-          "deal-from-table"
-
-        _ ->
-          nil
+        :take_from_deck -> "slide-from-deck"
+        :take_from_table -> "slide-from-table"
+        _ -> nil
       end
 
-    class = "held #{assigns.pos} #{action_class}"
+    class = "held #{assigns.pos} #{animation}"
     assigns = assign(assigns, class: class)
 
     ~H"""

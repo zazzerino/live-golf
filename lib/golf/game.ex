@@ -77,6 +77,11 @@ defmodule Golf.Game do
     end)
   end
 
+  @spec player_ids(t) :: [Player.id()]
+  def player_ids(game) do
+    Enum.map(game.players, & &1.id)
+  end
+
   @spec deal_hands(t) :: t
   def deal_hands(game) do
     deal_hands(game, player_ids(game))
@@ -94,11 +99,6 @@ defmodule Golf.Game do
   def update_player_name(game, player_id, new_name) do
     players = update_matching_id(game.players, player_id, &Player.update_name(&1, new_name))
     %Game{game | players: players}
-  end
-
-  @spec player_ids(t) :: [Player.id()]
-  def player_ids(game) do
-    Enum.map(game.players, & &1.id)
   end
 
   @spec no_players?(t) :: boolean

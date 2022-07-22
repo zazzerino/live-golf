@@ -54,8 +54,10 @@ defmodule GolfWeb.GameHelpers do
   @spec player_positions(Player.id(), [Player.t()]) :: [{Player.t(), pos}]
   def player_positions(player_id, players) do
     positions = hand_positions(length(players))
+
     player_index = Enum.find_index(players, &(&1.id == player_id))
     players = Golf.rotate(players, player_index)
+
     Enum.zip(positions, players)
   end
 

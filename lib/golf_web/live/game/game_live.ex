@@ -40,7 +40,6 @@ defmodule GolfWeb.GameLive do
 
   defp assign_game_info(socket, game) do
     user_id = socket.assigns[:user_id]
-
     playable_cards = Game.playable_cards(game, user_id)
     player_positions = player_positions(user_id, game.players)
     table_card = unless Enum.empty?(game.table_cards), do: hd(game.table_cards)
@@ -52,9 +51,9 @@ defmodule GolfWeb.GameLive do
     |> assign(:table_card, table_card)
     |> assign(:playable_cards, playable_cards)
     |> assign(:player_positions, player_positions)
+    |> assign(:last_action, last_action)
     |> assign(:user_is_host, user_id == game.host_id)
     |> assign(:not_started, game.state == :not_started)
-    |> assign(:last_action, last_action)
   end
 
   @impl true
@@ -131,10 +130,10 @@ defmodule GolfWeb.GameLive do
     %{"holder" => holder, "index" => index} = value
     index = String.to_integer(index)
     card = String.to_existing_atom("hand_#{index}")
-    face_up = Map.has_key?(value, "face_up")
+    face_up? = Map.has_key?(value, "face_up")
 
     if holder == user_id and card in playable_cards do
-      if game_state == :discard_or_swap and not face_up do
+      if game_state == :discard_or_swap and not face_up? do
         event = Game.Event.new(:swap, user_id, %{index: index})
         GameServer.handle_game_event(game_id, event)
       else

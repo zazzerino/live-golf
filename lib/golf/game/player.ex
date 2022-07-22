@@ -128,7 +128,7 @@ defmodule Golf.Game.Player do
 
   @spec cards_face_up(t) :: integer
   def cards_face_up(player) do
-    Enum.count(player.hand, fn {_, face_up} -> face_up end)
+    Enum.count(player.hand, fn {_, face_up?} -> face_up? end)
   end
 
   @spec all_cards_face_up?(t) :: boolean
