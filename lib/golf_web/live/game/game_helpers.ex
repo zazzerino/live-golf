@@ -7,7 +7,7 @@ defmodule GolfWeb.GameHelpers do
   @svg_height 500
   def svg_height, do: @svg_height
 
-  @svg_viewbox "0, 0, #{@svg_width}, #{@svg_height}"
+  @svg_viewbox "#{-@svg_width/2}, #{-@svg_height/2}, #{@svg_width}, #{@svg_height}"
   def svg_viewbox, do: @svg_viewbox
 
   @card_width 60
@@ -22,19 +22,19 @@ defmodule GolfWeb.GameHelpers do
   def card_center_x, do: -@card_width / 2
   def card_center_y, do: -@card_height / 2
 
-  def deck_x(_not_started? = true), do: @svg_width / 2 - @card_width / 2
-  def deck_x(_), do: @svg_width / 2 - @card_width
+  def deck_x(_not_started? = false), do: card_center_x() - @card_width / 2
+  def deck_x(_), do: card_center_x()
 
-  def deck_y(), do: @svg_height / 2 - @card_height / 2
+  def deck_y, do: card_center_y()
 
-  def table_card_x, do: @svg_width / 2
-  def table_card_y, do: @svg_height / 2 - @card_height / 2
+  def table_card_x, do: 0
+  def table_card_y, do: card_center_y()
 
   def hand_card_x(index) do
     case index do
-      i when i in [0, 3] -> -@card_width * 2
-      i when i in [1, 4] -> -@card_width
-      i when i in [2, 5] -> 0
+      i when i in [0, 3] -> -@card_width * 1.5
+      i when i in [1, 4] -> -@card_width / 2
+      i when i in [2, 5] -> @card_width / 2
     end
   end
 
@@ -69,15 +69,3 @@ defmodule GolfWeb.GameHelpers do
     user_id == holder and card in playable_cards
   end
 end
-
-# def hand_x(:bottom), do: @svg_width / 2 + @card_width / 2
-# def hand_x(:top), do: @svg_width / 2 + @card_width / 2
-
-# def hand_y(:bottom), do: @svg_height - @card_height
-# def hand_y(:top), do: @card_height
-
-# def held_card_x(:bottom), do: hand_x(:bottom) + @card_width / 2
-# def held_card_x(:top), do: hand_x(:top) - @card_width * 2.5
-
-# def held_card_y(:bottom), do: hand_y(:bottom) - @card_height / 2
-# def held_card_y(:top), do: hand_y(:top) - @card_height / 2
