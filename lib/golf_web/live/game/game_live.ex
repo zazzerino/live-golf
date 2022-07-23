@@ -45,6 +45,8 @@ defmodule GolfWeb.GameLive do
     table_card = unless Enum.empty?(game.table_cards), do: hd(game.table_cards)
     last_action = unless Enum.empty?(game.events), do: hd(game.events).action
 
+    IO.inspect(last_action, label: "LAST ACTION")
+
     socket
     |> assign(:game_id, game.id)
     |> assign(:game_state, game.state)

@@ -16,7 +16,8 @@ defmodule GolfWeb.GameComponent do
     y = assigns[:y] || card_center_y()
     width = card_width_scale()
 
-    class = "card #{assigns[:class]} #{if assigns[:highlight], do: "highlight"}"
+    highlight = if assigns[:highlight], do: "highlight"
+    class = "card #{assigns[:class]} #{highlight}"
     extra = assigns_to_attributes(assigns, [:class, :card_name, :x, :y, :highlight])
     assigns = assign(assigns, x: x, y: y, width: width, class: class, extra: extra)
 
@@ -33,13 +34,22 @@ defmodule GolfWeb.GameComponent do
   end
 
   def deck(assigns) do
-    class = "deck #{if assigns.not_started, do: "not-started"}"
-    assigns = assign(assigns, class: class)
+    not_started? = assigns[:not_started]
+    class = "deck #{if not_started?, do: "not-started"}"
+
+    assigns =
+      assign(assigns,
+        class: class,
+        x: deck_x(not_started?),
+        y: deck_y()
+      )
 
     ~H"""
     <.card_image
       class={@class}
       name="2B"
+      x={@x}
+      y={@y}
       highlight={@highlight}
       phx-click="deck_click"
     />
@@ -47,25 +57,29 @@ defmodule GolfWeb.GameComponent do
   end
 
   def table_card(assigns) do
+    assigns = assign(assigns, x: table_card_x(), y: table_card_y())
+
     ~H"""
     <.card_image
       class="table"
       name={@card}
+      x={@x}
+      y={@y}
       highlight={@highlight}
       phx-click="table_click"
     />
     """
   end
 
-         # x={hand_card_x(index)}
-         # y={hand_card_y(index)}
   def hand(assigns) do
     ~H"""
     <g class={"hand #{@pos}"}>
       <%= for {{card, face_up?}, index} <- Enum.with_index(@hand_cards) do %>
         <.card_image
-         class={"hand_#{index}"}
+         class={"hand-card hand-#{index}"}
          name={if face_up?, do: card, else: "2B"}
+         x={hand_card_x(index)}
+         y={hand_card_y(index)}
          highlight={highlight_hand_card?(@user_id, @holder, @playable_cards, index)}
          phx-value-index={index}
          phx-value-holder={@holder}

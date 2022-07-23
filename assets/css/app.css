@@ -1,32 +1,37 @@
 :root {
   --game-width: 500px;
-  --game-height: 600px;
+  --game-height: 500px;
 
   --card-width: 60px;
   --card-height: 84px;
 
-  --deck-x: calc(var(--card-width) / -2);
-  --table-card-x: calc(var(--card-width) / 2);
+  --deck-x: calc(50% - var(--card-width) / 2);
+  --deck-y: 50%;
 
-  --hand-bottom-x: 0vw;
-  --hand-bottom-y: calc(50vh - var(--card-height) - 4px);
+  --table-card-x: calc(50% + var(--card-width) / 2);
+  --table-card-y: 50%;
 
-  --hand-left-x: calc(var(--card-height) * -2 + 4px);
-  --hand-left-y: 0vh;
+  --hand-bottom-x: calc(50% + var(--card-width) / 2);
+  --hand-bottom-y: calc(100% - var(--card-height));
 
-  --hand-top-x: 0vw;
-  --hand-top-y: calc(-50vh + var(--card-height) + 4px);
+  --hand-left-x: var(--card-height);
+  --hand-left-y: calc(50% + var(--card-width) / 2);
+
+  --hand-top-x: calc(50% - var(--card-width) / 2);
+  --hand-top-y: var(--card-height);
 
   --hand-right-x: calc(var(--card-height) * 2 - 4px);
   --hand-right-y: 0vh;
 
-  --held-card-bottom-x: calc(var(--hand-bottom-x) + var(--card-width) * 1.5);
+  --held-card-bottom-x: calc(var(--hand-bottom-x) + var(--card-width));
   --held-card-bottom-y: var(--hand-bottom-y);
 
   --held-card-left-x: var(--hand-left-x);
   --held-card-left-y: calc(var(--hand-left-y) + var(--card-width) * 1.5);
+  /* --held-card-left-x: 50%; */
+  /* --held-card-left-y: 50%; */
 
-  --held-card-top-x: calc(var(--hand-top-x) - var(--card-width) * 1.5);
+  --held-card-top-x: calc(var(--hand-top-x) - var(--card-width));
   --held-card-top-y: var(--hand-top-y);
 
   --held-card-right-x: var(--hand-right-x);
@@ -39,30 +44,72 @@
   background-color: seagreen;
 }
 
+.card {
+  /* transform-box: view-box; */
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
 .card.highlight {
   filter: drop-shadow(0 0 0.3rem rgba(173, 255, 47, 1.0));
   cursor: pointer;
 }
 
-@keyframes slide-from-top {
+@keyframes deal-deck {
   from {
-    transform: translateY(-50vh)
+    transform:
+        translateY(-50%)
+            /* translateY(-40vh) */
                rotate(90deg);
   }
 }
 
+
 .card.deck.not-started {
-  animation-name: slide-from-top;
-  animation-duration: 1s;
-  transform: translate(0vw, 0vh);
+  animation: deal-deck 10s;
 }
 
-.card.deck {
-  transform: translateX(var(--deck-x));
+@keyframes slide-from-deck {
+  from {
+    transform: translate(var(--deck-x), var(--deck-y));
+  }
 }
 
-.card.table {
-  transform: translateX(var(--table-card-x));
+.card.held.slide-from-deck {
+  animation: slide-from-deck 1s;
+}
+
+@keyframes slide-from-table {
+  from {
+    transform: translate(var(--table-card-x), var(--table-card-y));
+  }
+}
+
+.card.held.slide-from-table {
+  animation: slide-from-table 1s;
+}
+
+.card.held.bottom {
+  transform: translate(var(--held-card-bottom-x),
+                       var(--held-card-bottom-y));
+}
+
+.card.held.left {
+  transform: translate(var(--held-card-left-x),
+                       var(--held-card-left-y))
+             rotate(90deg)
+  ;
+}
+
+.card.held.top {
+  transform: translate(var(--held-card-top-x),
+                       var(--held-card-top-y));
+}
+
+.card.held.right {
+  transform: translate(var(--held-card-right-x),
+                       var(--held-card-right-y))
+              rotate(90deg);
 }
 
 .hand.bottom {
@@ -86,78 +133,6 @@
   transform: translate(var(--hand-right-x),
                        var(--hand-right-y))
              rotate(270deg);
-}
-
-.card.hand_0 {
-  transform: translate(calc(var(--card-width) * -1),
-                       calc(var(--card-height) / -2));
-}
-
-.card.hand_1 {
-  transform: translateY(calc(var(--card-height) / -2));
-}
-
-.card.hand_2 {
-  transform: translate(var(--card-width),
-                       calc(var(--card-height) / -2));
-}
-
-.card.hand_3 {
-  transform: translate(calc(var(--card-width) * -1),
-                       calc(var(--card-height) / 2));
-}
-
-.card.hand_4 {
-  transform: translateY(calc(var(--card-height) / 2));
-}
-
-.card.hand_5 {
-  transform: translate(var(--card-width),
-                       calc(var(--card-height) / 2));
-}
-
-@keyframes slide-from-deck {
-  from {
-    transform: translateX(var(--deck-x));
-  }
-}
-
-.card.held.slide-from-deck {
-  animation-name: slide-from-deck;
-  animation-duration: 1s;
-}
-
-@keyframes slide-from-table {
-  from {
-    transform: translateX(var(--table-card-x))
-  }
-}
-
-.card.held.slide-from-table {
-  animation-name: slide-from-table;
-  animation-duration: 1s;
-}
-
-.card.held.bottom {
-  transform: translate(var(--held-card-bottom-x),
-                       var(--held-card-bottom-y));
-}
-
-.card.held.left {
-  transform: translate(var(--held-card-left-x),
-                       var(--held-card-left-y))
-             rotate(90deg);
-}
-
-.card.held.top {
-  transform: translate(var(--held-card-top-x),
-                       var(--held-card-top-y));
-}
-
-.card.held.right {
-  transform: translate(var(--held-card-right-x),
-                       var(--held-card-right-y))
-              rotate(90deg);
 }
 
 header nav ul {
@@ -200,4 +175,38 @@ header nav ul a {
 /* .hand { */
 /*   transform-box: fill-box; */
 /*   transform-origin: center; */
+/* } */
+
+/* --hand-left-col-x: calc(var(--card-width) * -1); */
+/* --hand-right-col-x: var(--card-width); */
+
+/* --hand-top-row-y: calc(var(--card-height) / -2); */
+/* --hand-bottom-row-y: calc(var(--card-height) / 2); */
+
+/* .card.hand-0 { */
+/*   transform: translate(var(--hand-left-col-x), */
+/*                        var(--hand-top-row-y)); */
+/* } */
+
+/* .card.hand-1 { */
+/*   transform: translateY(var(--hand-top-row-y)); */
+/* } */
+
+/* .card.hand-2 { */
+/*   transform: translate(var(--hand-right-col-x), */
+/*                        var(--hand-top-row-y)); */
+/* } */
+
+/* .card.hand-3 { */
+/*   transform: translate(var(--hand-left-col-x), */
+/*                        var(--hand-bottom-row-y)); */
+/* } */
+
+/* .card.hand-4 { */
+/*   transform: translateY(var(--hand-bottom-row-y)); */
+/* } */
+
+/* .card.hand-5 { */
+/*   transform: translate(var(--hand-right-col-x), */
+/*                        var(--hand-bottom-row-y)); */
 /* } */

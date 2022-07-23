@@ -5,13 +5,15 @@
   viewbox={@svg_viewbox}
 >
   <%= if @game_id do %>
+
     <.deck
       not_started={@not_started}
       highlight={:deck in @playable_cards}
     />
 
     <%= unless @not_started do %>
-      <%= if @table_card do %>
+
+      <%= if @table_card && @last_action in [:take_from_deck, :take_from_table] do %>
         <.table_card
           card={@table_card}
           highlight={:table in @playable_cards}
@@ -36,6 +38,14 @@
           />
         <% end %>
       <% end %>
+
+      <%= if @table_card && @last_action not in [:take_from_deck, :take_from_table] do %>
+        <.table_card
+          card={@table_card}
+          highlight={:table in @playable_cards}
+        />
+      <% end %>
+
     <% end %>
   <% end %>
 </svg>
