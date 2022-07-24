@@ -154,7 +154,8 @@ defmodule Golf.Game do
       | state: state,
         players: players,
         current_player_index: next_player_index(game),
-        final_turn?: final_turn?
+        final_turn?: final_turn?,
+        events: [event | game.events]
     }
 
     {:ok, game}

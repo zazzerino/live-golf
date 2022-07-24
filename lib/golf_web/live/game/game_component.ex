@@ -60,7 +60,10 @@ defmodule GolfWeb.GameComponent do
     animation =
       case assigns.last_action do
         :discard ->
-          "slide-from-held-#{assigns.last_pos}"
+          "slide-from-held-#{assigns.last_event_pos}"
+
+        :swap ->
+          "slide-from-hand-#{assigns.last_event.data.index}-#{assigns.last_event_pos}"
 
         _ ->
           nil

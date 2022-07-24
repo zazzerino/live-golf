@@ -29,7 +29,7 @@ defmodule GolfWeb.GameLive do
         not_started: nil,
         last_action: nil,
         last_event: nil,
-        last_pos: nil,
+        last_event_pos: nil,
         table_card: nil,
         second_table_card: nil,
         draw_table_card_first: nil
@@ -51,11 +51,13 @@ defmodule GolfWeb.GameLive do
     last_event = Enum.at(game.events, 0)
     last_action = if last_event, do: last_event.action
 
-    last_pos = if last_event do
+    last_event_pos = if last_event do
       player_positions
       |> Enum.find(fn {_pos, player} -> player.id == last_event.player_id end)
       |> Kernel.elem(0)
     end
+
+    IO.inspect(last_event, label: "last event")
 
     table_card = Enum.at(game.table_cards, 0)
     second_table_card = Enum.at(game.table_cards, 1)
@@ -70,7 +72,7 @@ defmodule GolfWeb.GameLive do
     |> assign(:not_started, game.state == :not_started)
     |> assign(:last_event, last_event)
     |> assign(:last_action, last_action)
-    |> assign(:last_pos, last_pos)
+    |> assign(:last_event_pos, last_event_pos)
     |> assign(:table_card, table_card)
     |> assign(:second_table_card, second_table_card)
     |> assign(:draw_table_card_first, draw_table_card_first)

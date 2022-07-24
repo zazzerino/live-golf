@@ -48,7 +48,7 @@ defmodule GolfWeb.GameHelpers do
   @spec hand_positions(1..4) :: [pos, ...]
   def hand_positions(player_count) do
     case player_count do
-      1 -> [:bottom]
+      1 -> [:right]
       2 -> [:bottom, :top]
       3 -> [:bottom, :left, :right]
       4 -> [:bottom, :left, :top, :right]
