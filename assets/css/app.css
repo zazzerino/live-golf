@@ -47,7 +47,7 @@
   cursor: pointer;
 }
 
-@keyframes slide-from-top {
+@keyframes deal-deck {
   from {
     transform: translateY(calc(var(--game-height) / -2))
                rotate(90deg);
@@ -55,7 +55,7 @@
 }
 
 .card.deck.not-started {
-  animation: slide-from-top 1s;
+  animation: deal-deck 1s;
 }
 
 @keyframes slide-from-held-bottom {
@@ -65,8 +65,42 @@
   }
 }
 
-.card.table.slide-from-held {
+.card.table.slide-from-held-bottom {
   animation: slide-from-held-bottom 1s;
+}
+
+@keyframes slide-from-held-left {
+  from {
+    transform: translate(var(--held-card-left-x), var(--card-width))
+               rotate(90deg);
+  }
+}
+
+.card.table.slide-from-held-left {
+  animation: slide-from-held-left 1s;
+}
+
+@keyframes slide-from-held-top {
+  from {
+    transform: translate(calc(var(--held-card-top-x) - var(--card-width) / 2),
+                         var(--held-card-top-y));
+  }
+}
+
+.card.table.slide-from-held-top {
+  animation: slide-from-held-top 1s;
+}
+
+@keyframes slide-from-held-right {
+  from {
+    transform: translate(var(--held-card-right-x),
+                         calc(var(--held-card-right-y) - var(--card-width) / 2))
+               rotate(90deg);
+  }
+}
+
+.card.table.slide-from-held-right {
+  animation: slide-from-held-right 1s;
 }
 
 @keyframes slide-from-deck {

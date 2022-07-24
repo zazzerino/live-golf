@@ -82,15 +82,15 @@ defmodule Golf.Game do
     Enum.map(game.players, & &1.id)
   end
 
-  @spec deal_hands(t) :: t
-  def deal_hands(game) do
-    deal_hands(game, player_ids(game))
-  end
+  # @spec deal_hands(t) :: t
+  # def deal_hands(game) do
+  #   deal_hands(game, player_ids(game))
+  # end
 
   @spec start(t) :: t
   def start(game) do
     game
-    |> deal_hands()
+    |> deal_hands(player_ids(game))
     |> deal_table_card()
     |> Map.put(:state, :flip_two)
   end

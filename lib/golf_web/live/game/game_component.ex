@@ -58,12 +58,15 @@ defmodule GolfWeb.GameComponent do
 
   def table_card(assigns) do
     animation =
-      case assigns[:last_action] do
-        :discard -> "slide-from-held"
-        _ -> nil
+      case assigns.last_action do
+        :discard ->
+          "slide-from-held-#{assigns.last_pos}"
+
+        _ ->
+          nil
       end
 
-    class = "table #{animation}"
+    class = if animation, do: "table #{animation}", else: "table"
     assigns = assign(assigns, x: table_card_x(), y: table_card_y(), class: class)
 
     ~H"""
