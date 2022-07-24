@@ -9,7 +9,7 @@ defmodule Golf.Game do
             current_player_index: 0,
             deck: [],
             table_cards: [],
-            final_turn?: false,
+            final_round?: false,
             events: []
 
   @deck_count 2
@@ -26,7 +26,7 @@ defmodule Golf.Game do
           current_player_index: integer,
           deck: Deck.t(),
           table_cards: [Card.t()],
-          final_turn?: boolean,
+          final_round?: boolean,
           events: [Event.t()]
         }
 
@@ -63,7 +63,7 @@ defmodule Golf.Game do
   end
 
   @spec deal_table_card(t) :: t
-  def deal_table_card(game) do
+  defp deal_table_card(game) do
     {:ok, card, deck} = Deck.deal(game.deck)
     table_cards = [card | game.table_cards]
     %Game{game | deck: deck, table_cards: table_cards}
@@ -147,14 +147,14 @@ defmodule Golf.Game do
     state = if all_face_up?, do: :game_over, else: :take
 
     player_face_up? = Player.all_cards_face_up?(player)
-    final_turn? = if player_face_up?, do: true, else: game.final_turn?
+    final_round? = if player_face_up?, do: true, else: game.final_round?
 
     game = %Game{
       game
       | state: state,
         players: players,
         current_player_index: next_player_index(game),
-        final_turn?: final_turn?,
+        final_round?: final_round?,
         events: [event | game.events]
     }
 
@@ -223,7 +223,7 @@ defmodule Golf.Game do
     state = if all_face_up?, do: :game_over, else: :take
 
     player_face_up? = Player.all_cards_face_up?(player)
-    final_turn? = if player_face_up?, do: true, else: game.final_turn?
+    final_round? = if player_face_up?, do: true, else: game.final_round?
 
     game = %Game{
       game
@@ -231,7 +231,7 @@ defmodule Golf.Game do
         players: players,
         table_cards: table_cards,
         current_player_index: next_player_index(game),
-        final_turn?: final_turn?,
+        final_round?: final_round?,
         events: events
     }
 
@@ -307,19 +307,19 @@ defmodule Golf.Game do
   end
 end
 
-# def handle_event(%{final_turn?: true} = game, %{action: :flip} = event) do
+# def handle_event(%{final_round?: true} = game, %{action: :flip} = event) do
 #   %{player_id: player_id, data: %{hand_index: hand_index}} = event
 #   events = [event | game.events]
 #   players = Map.update!(game.players, event.player_id, &Player.flip_card(&1, hand_index))
 #   next_player_id = next_item(game.player_order, player_id)
-#   {state, final_turn?} = check_game_over(player_id, players, game.final_turn?)
+#   {state, final_round?} = check_game_over(player_id, players, game.final_round?)
 
 #   game = %Game{
 #     game
 #     | state: state,
 #       players: players,
 #       next_player_id: next_player_id,
-#       final_turn?: final_turn?,
+#       final_round?: final_round?,
 #       events: events
 #   }
 

@@ -36,6 +36,15 @@
   --held-card-right-y: calc(var(--hand-right-y) - var(--card-width) * 1.5);
 }
 
+
+header nav ul {
+  display: flex;
+}
+
+header nav ul a {
+  margin-right: 2rem;
+}
+
 .game-svg {
   width: var(--game-width);
   height: var(--game-height);
@@ -450,10 +459,37 @@
              rotate(270deg);
 }
 
-header nav ul {
-  display: flex;
+.player-score {
+  fill: #9b4dca;
+  filter: drop-shadow(0 0 0.3rem rgba(173, 255, 47, 1.0));
+  font-size: 125%;
+  text-anchor: middle;
+  dominant-baseline: middle;
 }
 
-header nav ul a {
-  margin-right: 2rem;
+.player-score.bottom {
+  transform: translate(-33%, calc(var(--hand-bottom-y) + var(--card-height) / 2));
+}
+
+.player-score.left {
+  transform: translate(var(--hand-left-x), -33%)
+             rotate(90deg);
+}
+
+.player-score.top {
+  transform: translate(33%, var(--hand-top-y))
+             rotate(180deg);
+}
+
+.player-score.right {
+  transform: translate(var(--hand-right-x), 33%)
+             rotate(270deg);
+}
+
+.game-over-message {
+  fill: #9b4dca;
+  filter: drop-shadow(0 0 0.3rem rgba(173, 255, 47, 1.0));
+  font-size: 500%;
+  text-anchor: middle;
+  dominant-baseline: middle;
 }

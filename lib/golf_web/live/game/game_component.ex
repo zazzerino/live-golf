@@ -139,6 +139,22 @@ defmodule GolfWeb.GameComponent do
     """
   end
 
+  def player_score(assigns) do
+    ~H"""
+    <text class={"player-score #{@pos}"}>
+      <%= "#{@name}: #{@score}" %>
+    </text>
+    """
+  end
+
+  def game_over_message(assigns) do
+    ~H"""
+    <text class="game-over-message">
+      Game Over
+    </text>
+    """
+  end
+
   def create_game_form(assigns) do
     ~H"""
     <.form

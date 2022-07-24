@@ -5,7 +5,6 @@
   viewbox={@svg_viewbox}
 >
   <%= if @game_id do %>
-
     <.deck
       not_started={@not_started}
       highlight={:deck in @playable_cards}
@@ -14,6 +13,7 @@
     <%= unless @not_started do %>
 
       <%= if @draw_table_card_first do %>
+
         <%= if @second_table_card do %>
           <.second_table_card card={@second_table_card} />
         <% end %>
@@ -27,6 +27,7 @@
             highlight={:table in @playable_cards}
           />
         <% end %>
+
       <% end %>
 
       <%= for {pos, player} <- @player_positions do %>
@@ -49,6 +50,7 @@
       <% end %>
 
       <%= unless @draw_table_card_first do %>
+
         <%= if @second_table_card do %>
           <.second_table_card card={@second_table_card} />
         <% end %>
@@ -62,8 +64,17 @@
             highlight={:table in @playable_cards}
           />
         <% end %>
+
       <% end %>
 
+      <%= for {pos, name, score} <- @player_scores do %>
+        <.player_score pos={pos} name={name} score={score} />
+      <% end %>
+
+    <% end %>
+
+    <%= if @game_over do %>
+      <.game_over_message />
     <% end %>
   <% end %>
 </svg>

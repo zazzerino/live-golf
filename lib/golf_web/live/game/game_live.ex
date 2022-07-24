@@ -25,8 +25,10 @@ defmodule GolfWeb.GameLive do
         game_id: nil,
         playable_cards: nil,
         player_positions: nil,
+        player_scores: nil,
         user_is_host: nil,
         not_started: nil,
+        game_over: nil,
         last_action: nil,
         last_event: nil,
         last_event_pos: nil,
@@ -46,7 +48,13 @@ defmodule GolfWeb.GameLive do
   defp assign_game_info(socket, game) do
     user_id = socket.assigns[:user_id]
     playable_cards = Game.playable_cards(game, user_id)
+    game_over = game.state == :game_over
+
     player_positions = player_positions(user_id, game.players)
+
+    player_scores =
+      player_positions
+      |> Enum.map(fn {pos, player} -> {pos, player.name, Game.Player.score(player)} end)
 
     last_event = Enum.at(game.events, 0)
     last_action = if last_event, do: last_event.action
@@ -57,8 +65,6 @@ defmodule GolfWeb.GameLive do
       |> Kernel.elem(0)
     end
 
-    IO.inspect(last_event, label: "last event")
-
     table_card = Enum.at(game.table_cards, 0)
     second_table_card = Enum.at(game.table_cards, 1)
     draw_table_card_first = table_card && last_action in [:take_from_deck, :take_from_table]
@@ -68,6 +74,7 @@ defmodule GolfWeb.GameLive do
     |> assign(:game_state, game.state)
     |> assign(:playable_cards, playable_cards)
     |> assign(:player_positions, player_positions)
+    |> assign(:player_scores, player_scores)
     |> assign(:user_is_host, user_id == game.host_id)
     |> assign(:not_started, game.state == :not_started)
     |> assign(:last_event, last_event)
@@ -76,6 +83,7 @@ defmodule GolfWeb.GameLive do
     |> assign(:table_card, table_card)
     |> assign(:second_table_card, second_table_card)
     |> assign(:draw_table_card_first, draw_table_card_first)
+    |> assign(:game_over, game_over)
   end
 
   @impl true
