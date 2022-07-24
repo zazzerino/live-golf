@@ -22,8 +22,8 @@ defmodule GolfWeb.GameHelpers do
   def card_center_x, do: -@card_width / 2
   def card_center_y, do: -@card_height / 2
 
-  def deck_x(_not_started? = false), do: card_center_x() - @card_width / 2
-  def deck_x(_), do: card_center_x()
+  def deck_x(_started? = true), do: card_center_x()
+  def deck_x(_), do: card_center_x() - @card_width / 2
 
   def deck_y, do: card_center_y()
 

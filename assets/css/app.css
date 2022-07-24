@@ -58,6 +58,17 @@
   animation: slide-from-top 1s;
 }
 
+@keyframes slide-from-held-bottom {
+  from {
+    transform: translate(calc(var(--held-card-bottom-x) - var(--card-width) / 2),
+                         var(--held-card-bottom-y));
+  }
+}
+
+.card.table.slide-from-held {
+  animation: slide-from-held-bottom 1s;
+}
+
 @keyframes slide-from-deck {
   from {
     transform: translate(var(--deck-x), var(--deck-y));

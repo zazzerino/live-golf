@@ -13,11 +13,18 @@
 
     <%= unless @not_started do %>
 
-      <%= if @table_card && @last_action in [:take_from_deck, :take_from_table] do %>
-        <.table_card
-          card={@table_card}
-          highlight={:table in @playable_cards}
-        />
+      <%= if @draw_table_card_first do %>
+        <%= if @second_table_card do %>
+          <.second_table_card card={@second_table_card} />
+        <% end %>
+
+        <%= if @table_card do %>
+          <.table_card
+            card={@table_card}
+            last_action={@last_action}
+            highlight={:table in @playable_cards}
+          />
+        <% end %>
       <% end %>
 
       <%= for {pos, player} <- @player_positions do %>
@@ -39,11 +46,18 @@
         <% end %>
       <% end %>
 
-      <%= if @table_card && @last_action not in [:take_from_deck, :take_from_table] do %>
-        <.table_card
-          card={@table_card}
-          highlight={:table in @playable_cards}
-        />
+      <%= unless @draw_table_card_first do %>
+        <%= if @second_table_card do %>
+          <.second_table_card card={@second_table_card} />
+        <% end %>
+
+        <%= if @table_card do %>
+          <.table_card
+            card={@table_card}
+            last_action={@last_action}
+            highlight={:table in @playable_cards}
+          />
+        <% end %>
       <% end %>
 
     <% end %>

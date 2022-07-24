@@ -23,11 +23,15 @@ defmodule GolfWeb.GameLive do
         trigger_submit_create: false,
         trigger_submit_leave: false,
         game_id: nil,
-        table_card: nil,
         playable_cards: nil,
         player_positions: nil,
         user_is_host: nil,
-        not_started: nil
+        not_started: nil,
+        last_action: nil,
+        last_event: nil,
+        table_card: nil,
+        second_table_card: nil,
+        draw_table_card_first: nil
       )
 
     if connected?(socket) and is_binary(game_id) do
@@ -42,20 +46,26 @@ defmodule GolfWeb.GameLive do
     user_id = socket.assigns[:user_id]
     playable_cards = Game.playable_cards(game, user_id)
     player_positions = player_positions(user_id, game.players)
-    table_card = unless Enum.empty?(game.table_cards), do: hd(game.table_cards)
-    last_action = unless Enum.empty?(game.events), do: hd(game.events).action
 
-    IO.inspect(last_action, label: "LAST ACTION")
+    last_event = Enum.at(game.events, 0)
+    last_action = if last_event, do: last_event.action
+
+    table_card = Enum.at(game.table_cards, 0)
+    second_table_card = Enum.at(game.table_cards, 1)
+    draw_table_card_first = table_card && last_action in [:take_from_deck, :take_from_table]
 
     socket
     |> assign(:game_id, game.id)
     |> assign(:game_state, game.state)
-    |> assign(:table_card, table_card)
     |> assign(:playable_cards, playable_cards)
     |> assign(:player_positions, player_positions)
-    |> assign(:last_action, last_action)
     |> assign(:user_is_host, user_id == game.host_id)
     |> assign(:not_started, game.state == :not_started)
+    |> assign(:last_event, last_event)
+    |> assign(:last_action, last_action)
+    |> assign(:table_card, table_card)
+    |> assign(:second_table_card, second_table_card)
+    |> assign(:draw_table_card_first, draw_table_card_first)
   end
 
   @impl true

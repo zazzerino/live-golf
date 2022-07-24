@@ -57,16 +57,37 @@ defmodule GolfWeb.GameComponent do
   end
 
   def table_card(assigns) do
-    assigns = assign(assigns, x: table_card_x(), y: table_card_y())
+    animation =
+      case assigns[:last_action] do
+        :discard -> "slide-from-held"
+        _ -> nil
+      end
+
+    class = "table #{animation}"
+    assigns = assign(assigns, x: table_card_x(), y: table_card_y(), class: class)
 
     ~H"""
     <.card_image
-      class="table"
+      class={@class}
       name={@card}
       x={@x}
       y={@y}
       highlight={@highlight}
       phx-click="table_click"
+    />
+    """
+  end
+
+  def second_table_card(assigns) do
+    assigns = assign(assigns,
+      x: table_card_x(),
+      y: table_card_y())
+
+    ~H"""
+    <.card_image
+      name={@card}
+      x={@x}
+      y={@y}
     />
     """
   end
