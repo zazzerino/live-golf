@@ -67,22 +67,22 @@ defmodule Golf.Game.Player do
       # all match
       [a, a, a,
        a, a, a] when is_integer(a) ->
-        -60
+        -40
 
       # outer cols match
       [a, b, a,
        a, c, a] when is_integer(a) ->
-        total_vals([b, c], total - 40)
+        total_vals([b, c], total - 20)
 
       # left 2 cols match
       [a, a, b,
        a, a, c] when is_integer(a) ->
-        total_vals([b, c], total - 20)
+        total_vals([b, c], total - 10)
 
       # right 2 cols match
       [a, b, b,
        c, b, b] when is_integer(b) ->
-        total_vals([a, c], total - 20)
+        total_vals([a, c], total - 10)
 
       # left col match
       [a, b, c,

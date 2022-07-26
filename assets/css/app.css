@@ -36,7 +36,6 @@
   --held-card-right-y: calc(var(--hand-right-y) - var(--card-width) * 1.5);
 }
 
-
 header nav ul {
   display: flex;
 }
@@ -52,7 +51,7 @@ header nav ul a {
 }
 
 .card.highlight {
-  filter: drop-shadow(0 0 0.3rem rgba(173, 255, 47, 1.0));
+  filter: drop-shadow(0 0 1rem rgba(173, 255, 47, 1.0));
   cursor: pointer;
 }
 
@@ -462,7 +461,7 @@ header nav ul a {
 .player-score {
   fill: #9b4dca;
   filter: drop-shadow(0 0 0.3rem rgba(173, 255, 47, 1.0));
-  font-size: 125%;
+  font-size: 200%;
   text-anchor: middle;
   dominant-baseline: middle;
 }
@@ -473,17 +472,20 @@ header nav ul a {
 
 .player-score.left {
   transform: translate(var(--hand-left-x), -33%)
-             rotate(90deg);
+             rotate(90deg)
+  ;
 }
 
 .player-score.top {
   transform: translate(33%, var(--hand-top-y))
-             rotate(180deg);
+             /* rotate(180deg) */
+  ;
 }
 
 .player-score.right {
   transform: translate(var(--hand-right-x), 33%)
-             rotate(270deg);
+             rotate(270deg)
+  ;
 }
 
 .game-over-message {

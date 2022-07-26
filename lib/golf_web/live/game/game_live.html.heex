@@ -66,16 +66,18 @@
         <% end %>
 
       <% end %>
-
-      <%= for {pos, name, score} <- @player_scores do %>
-        <.player_score pos={pos} name={name} score={score} />
-      <% end %>
-
     <% end %>
 
     <%= if @game_over do %>
       <.game_over_message />
     <% end %>
+
+    <%= if @player_scores do %>
+      <%= for {pos, name, score} <- @player_scores do %>
+        <.player_score pos={pos} name={name} score={score} />
+      <% end %>
+    <% end %>
+
   <% end %>
 </svg>
 

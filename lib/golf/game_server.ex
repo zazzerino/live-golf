@@ -47,6 +47,10 @@ defmodule Golf.GameServer do
     GenServer.cast(via_tuple(id), {:update_player_name, player_id, new_name})
   end
 
+  def handle_chat_message(id, message) when is_binary(id) do
+    GenServer.cast(via_tuple(id), {:chat_message, message})
+  end
+
   defp via_tuple(id) when is_binary(id) do
     {:via, Registry, {Golf.GameRegistry, id}}
   end
@@ -55,36 +59,36 @@ defmodule Golf.GameServer do
 
   @impl true
   def init(game) do
-    {:ok, {game, set_timer()}}
+    {:ok, {game, set_timer(), []}}
   end
 
   @impl true
-  def handle_call(:fetch_state, _from, {game, _timer} = state) do
+  def handle_call(:fetch_state, _from, {game, _timer, _messages} = state) do
     {:reply, {:ok, game}, state}
   end
 
   @impl true
-  def handle_cast({:start_game, player_id}, {game, timer})
+  def handle_cast({:start_game, player_id}, {game, timer, messages})
       when player_id == game.host_id and game.state == :not_started do
     game = Game.start(game)
     broadcast_game_state(game)
-    {:noreply, {game, reset_timer(timer)}}
+    {:noreply, {game, reset_timer(timer), messages}}
   end
 
   @impl true
-  def handle_cast({:add_player, player}, {game, timer} = state)
+  def handle_cast({:add_player, player}, {game, timer, messages} = state)
       when length(game.players) < @max_players do
     unless player.id in Game.player_ids(game) do
       game = Game.add_player(game, player)
       broadcast_game_state(game)
-      {:noreply, {game, reset_timer(timer)}}
+      {:noreply, {game, reset_timer(timer), messages}}
     else
       {:noreply, state}
     end
   end
 
   @impl true
-  def handle_cast({:remove_player, player_id}, {game, timer} = state) do
+  def handle_cast({:remove_player, player_id}, {game, timer, messages} = state) do
     if player_id in Game.player_ids(game) do
       game = Game.remove_player(game, player_id)
       broadcast_game_state(game)
@@ -93,7 +97,7 @@ defmodule Golf.GameServer do
         Logger.info("Game #{game.id} was ended because all players left")
         {:stop, :normal, state}
       else
-        {:noreply, {game, reset_timer(timer)}}
+        {:noreply, {game, reset_timer(timer), messages}}
       end
     else
       {:noreply, state}
@@ -101,12 +105,12 @@ defmodule Golf.GameServer do
   end
 
   @impl true
-  def handle_cast({:game_event, event}, {game, timer} = state) do
+  def handle_cast({:game_event, event}, {game, timer, messages} = state) do
     if game.state == :flip_two or Game.is_players_turn?(game, event.player_id) do
       case Game.handle_event(game, event) do
         {:ok, game} ->
           broadcast_game_state(game)
-          {:noreply, {game, reset_timer(timer)}}
+          {:noreply, {game, reset_timer(timer), messages}}
 
         _ ->
           {:noreply, state}
@@ -117,14 +121,20 @@ defmodule Golf.GameServer do
   end
 
   @impl true
-  def handle_cast({:update_player_name, player_id, new_name}, {game, timer}) do
+  def handle_cast({:update_player_name, player_id, new_name}, {game, timer, messages}) do
     game = Game.update_player_name(game, player_id, new_name)
     broadcast_game_state(game)
-    {:noreply, {game, reset_timer(timer)}}
+    {:noreply, {game, reset_timer(timer), messages}}
   end
 
   @impl true
-  def handle_info(:inactivity_timeout, {game, _timer} = state) do
+  def handle_cast({:chat_message, message}, {game, timer, messages}) do
+    PubSub.broadcast(Golf.PubSub, "game:#{game.id}", {:chat_message, message})
+    {:noreply, {game, reset_timer(timer), [message | messages]}}
+  end
+
+  @impl true
+  def handle_info(:inactivity_timeout, {game, _timer, _messages} = state) do
     Logger.info("Game #{game.id} was ended for inactivity")
     PubSub.broadcast(Golf.PubSub, "game:#{game.id}", :game_inactive)
     {:stop, :normal, state}
@@ -134,12 +144,8 @@ defmodule Golf.GameServer do
     Process.send_after(self(), :inactivity_timeout, @inactivity_timeout)
   end
 
-  defp cancel_timer(timer) do
-    Process.cancel_timer(timer)
-  end
-
   defp reset_timer(timer) do
-    cancel_timer(timer)
+    Process.cancel_timer(timer)
     set_timer()
   end
 
